@@ -1,0 +1,21 @@
+[package]
+name = "chromap"
+description = "Color conversion, perceptual adjustment, palette generation, and WCAG contrast utilities"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords = ["color", "oklch", "palette", "wcag", "css"]
+categories = ["graphics", "web-programming", "multimedia::images"]
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[lints]
+workspace = true

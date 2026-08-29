@@ -1,0 +1,46 @@
+{
+  "name": "chromap",
+  "version": "0.1.0",
+  "description": "Color conversion, perceptual palettes, and WCAG contrast tools powered by Rust",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/junix/colors-rs.git"
+  },
+  "homepage": "https://github.com/junix/colors-rs#readme",
+  "bugs": "https://github.com/junix/colors-rs/issues",
+  "keywords": [
+    "color",
+    "oklch",
+    "palette",
+    "wcag",
+    "rust"
+  ],
+  "bin": {
+    "chromap": "bin/chromap.js"
+  },
+  "files": [
+    "bin/chromap.js",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/*/Cargo.toml",
+    "crates/*/src/**/*.rs",
+    "crates/*/examples/**/*.rs",
+    "crates/*/tests/**/*.rs",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "cargo build --release --locked --package chromap-cli",
+    "test": "cargo test --workspace --all-features && node scripts/verify-npm-package.mjs",
+    "check:package": "node scripts/verify-npm-package.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = ["crates/chromap", "crates/chromap-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.81"
+repository = "https://github.com/junix/colors-rs"
+homepage = "https://github.com/junix/colors-rs"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
