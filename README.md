@@ -21,7 +21,7 @@
 | 配色 | 渐变、相邻明度、相邻色相、tints、shades、tones、六种 harmony、黄金角 |
 | 可访问性 | relative luminance、ratio、AA/AAA、候选色、黑白色、自动修复 |
 | 图片基础 | alpha 合成、linear-light 平均色、确定性 OKLab 主色聚类 |
-| CLI | 文本、JSON、CSS custom properties |
+| CLI | ANSI True Color/256 色块、稳定文本、JSON、PNG、CSS custom properties |
 
 ## 构建
 
@@ -136,6 +136,34 @@ chromap dominant --count 2 red red red blue
 chromap distance '#4f7cff' '#587ff4'
 ```
 
+### 终端色块与 PNG
+
+交互式终端默认在颜色文本前显示 ANSI 色块；True Color 不可用时自动映射到 ANSI 256 色。输出被 pipe、设置了 `NO_COLOR`，或使用 `--plain` / `--json` 时不会混入 ANSI 转义序列。
+
+```bash
+# TTY 中自动显示色块
+chromap palette '#4f7cff' --kind hue-wheel --count 8
+
+# 强制或禁用 ANSI 色块
+chromap --color always convert '#4f7cff'
+chromap --color never palette '#4f7cff'
+
+# 面向 shell 脚本的稳定纯文本
+chromap --plain gradient red blue --steps 7
+
+# 写入棋盘底 PNG；已存在文件默认拒绝覆盖
+chromap palette '#4f7cff80' --count 9 --png palette.png
+chromap palette '#4f7cff80' --count 9 --png palette.png --force
+
+# 只验证 PNG 编码与目标路径，不写盘
+chromap --json gradient red blue --png gradient.png --dry-run
+
+# `-` 表示只把 PNG 二进制写到 stdout
+chromap gradient red blue --png - > gradient.png
+```
+
+半透明颜色的终端预览会并排显示深色与浅色背景下的结果；PNG 使用棋盘背景表达 alpha。PNG 一次最多渲染 256 色，诊断与写入摘要走 stderr，`--json` 的 stdout 始终保持合法 JSON。
+
 ## 边界
 
 1. canonical storage 是 normalized gamma-encoded sRGBA，不是 HDR/Display-P3。
@@ -148,7 +176,7 @@ chromap distance '#4f7cff' '#587ff4'
 
 ## 验证
 
-仓库包含集成测试、rustfmt/Clippy/test/rustdoc CI。生成环境没有 Rust toolchain，因此本次仅完成了源代码词法、分隔符、TOML、YAML 与项目结构静态检查；请在 Rust 环境运行上面的 `cargo test` 与 `cargo clippy`。
+仓库包含 library/CLI 集成测试以及 rustfmt、Clippy、test、rustdoc、npm pack CI。CLI 测试覆盖 ANSI True Color/256 色降级、plain/JSON 无装饰契约、PNG 文件/stdout、dry-run 与覆盖保护。
 
 ## License
 

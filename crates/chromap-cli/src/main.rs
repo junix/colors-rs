@@ -1,7 +1,10 @@
 //! CLI for the `chromap` color toolkit.
 
+mod visual;
+
 use std::error::Error;
 use std::io::{Error as IoError, ErrorKind};
+use std::path::PathBuf;
 use std::process::ExitCode;
 
 use chromap::{
@@ -14,6 +17,7 @@ use chromap::{
 };
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use serde_json::{json, Value};
+use visual::{output_png, ColorPolicy, PngReport, TerminalStyle};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -31,8 +35,21 @@ struct Cli {
     format: OutputFormat,
 
     /// Emit structured JSON.
-    #[arg(long, global = true)]
+    #[arg(long, global = true, conflicts_with = "plain")]
     json: bool,
+
+    /// Emit stable text without ANSI decoration.
+    #[arg(long, global = true)]
+    plain: bool,
+
+    /// Control ANSI color swatches in human-readable output.
+    #[arg(
+        long = "color",
+        global = true,
+        value_enum,
+        default_value_t = ColorPolicy::Auto
+    )]
+    color_output: ColorPolicy,
 }
 
 #[derive(Debug, Subcommand)]
@@ -122,6 +139,8 @@ struct GradientArgs {
     hue_route: HueRouteArg,
     #[arg(long)]
     css_prefix: Option<String>,
+    #[command(flatten)]
+    png: PngArgs,
 }
 
 #[derive(Debug, Args)]
@@ -141,6 +160,21 @@ struct PaletteArgs {
     max_lightness: f64,
     #[arg(long)]
     css_prefix: Option<String>,
+    #[command(flatten)]
+    png: PngArgs,
+}
+
+#[derive(Debug, Args)]
+struct PngArgs {
+    /// Write a checkerboard-backed PNG preview; use - for binary stdout.
+    #[arg(long, value_name = "PATH")]
+    png: Option<PathBuf>,
+    /// Validate and encode the PNG without writing it.
+    #[arg(long, requires = "png")]
+    dry_run: bool,
+    /// Replace an existing PNG file.
+    #[arg(short, long, requires = "png")]
+    force: bool,
 }
 
 #[derive(Debug, Subcommand)]
@@ -247,11 +281,14 @@ fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
         command,
         format,
         json,
+        plain,
+        color_output,
     } = cli;
+    let terminal = TerminalStyle::detect(color_output, plain, json);
     match command {
-        Command::Inspect { color } => inspect(color, json),
-        Command::Convert { color } => print_one(color, format, json),
-        Command::Adjust(args) => print_one(adjust(args)?, format, json),
+        Command::Inspect { color } => inspect(color, json, terminal),
+        Command::Convert { color } => print_one(color, format, json, terminal),
+        Command::Adjust(args) => print_one(adjust(args)?, format, json, terminal),
         Command::Mix(args) => print_one(
             mix(
                 args.first,
@@ -262,6 +299,7 @@ fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             )?,
             format,
             json,
+            terminal,
         ),
         Command::Gradient(args) => {
             let colors = gradient(
@@ -271,19 +309,43 @@ fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
                 args.space.into(),
                 args.hue_route.into(),
             )?;
-            print_many(&colors, format, json, args.css_prefix.as_deref())
+            output_many(
+                &colors,
+                format,
+                json,
+                terminal,
+                args.css_prefix.as_deref(),
+                &args.png,
+            )
         }
         Command::Palette(args) => {
             let colors = generate_palette(&args)?;
-            print_many(&colors, format, json, args.css_prefix.as_deref())
+            output_many(
+                &colors,
+                format,
+                json,
+                terminal,
+                args.css_prefix.as_deref(),
+                &args.png,
+            )
         }
-        Command::Contrast { command } => run_contrast(command, format, json),
+        Command::Contrast { command } => run_contrast(command, format, json, terminal),
         Command::Distance { first, second } => {
             let lab = oklab_distance(first, second);
             let rgb = srgb_distance(first, second);
             if json {
                 print_json(&json!({ "oklab": lab, "srgb": rgb }))
             } else {
+                if terminal.has_swatches() {
+                    println!(
+                        "first:  {}",
+                        terminal.decorate(first, &render_color(first, format))
+                    );
+                    println!(
+                        "second: {}",
+                        terminal.decorate(second, &render_color(second, format))
+                    );
+                }
                 println!("OKLab distance: {lab:.8}");
                 println!("sRGB distance:  {rgb:.8}");
                 Ok(())
@@ -297,8 +359,9 @@ fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             composite_over(foreground, background, space.into()),
             format,
             json,
+            terminal,
         ),
-        Command::Average { colors } => print_one(average_color(&colors)?, format, json),
+        Command::Average { colors } => print_one(average_color(&colors)?, format, json, terminal),
         Command::Dominant {
             count,
             iterations,
@@ -322,7 +385,7 @@ fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
                 for swatch in swatches {
                     println!(
                         "{}\tpopulation={}\tweight={:.6}",
-                        render_color(swatch.color, format),
+                        terminal.decorate(swatch.color, &render_color(swatch.color, format)),
                         swatch.population,
                         swatch.weight
                     );
@@ -383,6 +446,7 @@ fn run_contrast(
     command: ContrastCommand,
     format: OutputFormat,
     json_output: bool,
+    terminal: TerminalStyle,
 ) -> Result<(), Box<dyn Error>> {
     match command {
         ContrastCommand::Ratio {
@@ -394,6 +458,16 @@ fn run_contrast(
                 Some(canvas) => evaluate_contrast_on(foreground, background, canvas)?,
                 None => evaluate_contrast(foreground, background)?,
             };
+            if !json_output && terminal.has_swatches() {
+                println!(
+                    "foreground: {}",
+                    terminal.decorate(foreground, &render_color(foreground, format))
+                );
+                println!(
+                    "background: {}",
+                    terminal.decorate(background, &render_color(background, format))
+                );
+            }
             print_rating(rating, json_output)
         }
         ContrastCommand::Pick {
@@ -411,7 +485,10 @@ fn run_contrast(
                     "meets_minimum": choice.meets_minimum,
                 }))
             } else {
-                println!("{}", render_color(choice.color, format));
+                println!(
+                    "{}",
+                    terminal.decorate(choice.color, &render_color(choice.color, format))
+                );
                 println!("index: {}", choice.index);
                 println!("ratio: {:.6}:1", choice.ratio);
                 println!("meets minimum: {}", choice.meets_minimum);
@@ -426,7 +503,10 @@ fn run_contrast(
                     "ratio": choice.ratio,
                 }))
             } else {
-                println!("{}", render_color(choice.color, format));
+                println!(
+                    "{}",
+                    terminal.decorate(choice.color, &render_color(choice.color, format))
+                );
                 println!("ratio: {:.6}:1", choice.ratio);
                 Ok(())
             }
@@ -449,7 +529,18 @@ fn run_contrast(
                     "direction": format!("{:?}", result.direction).to_ascii_lowercase(),
                 }))
             } else {
-                println!("{}", render_color(result.color, format));
+                if terminal.has_swatches() {
+                    println!(
+                        "original: {}",
+                        terminal.decorate(result.original, &render_color(result.original, format))
+                    );
+                    println!(
+                        "adjusted: {}",
+                        terminal.decorate(result.color, &render_color(result.color, format))
+                    );
+                } else {
+                    println!("{}", render_color(result.color, format));
+                }
                 println!("original ratio: {:.6}:1", result.original_ratio);
                 println!("final ratio: {:.6}:1", result.ratio);
                 println!("direction: {:?}", result.direction);
@@ -459,7 +550,7 @@ fn run_contrast(
     }
 }
 
-fn inspect(color: Color, json_output: bool) -> Result<(), Box<dyn Error>> {
+fn inspect(color: Color, json_output: bool, terminal: TerminalStyle) -> Result<(), Box<dyn Error>> {
     if json_output {
         print_json(&json!({
             "color": color_value(color),
@@ -472,6 +563,9 @@ fn inspect(color: Color, json_output: bool) -> Result<(), Box<dyn Error>> {
             } else { None },
         }))
     } else {
+        if let Some(swatch) = terminal.swatch(color) {
+            println!("swatch: {swatch}");
+        }
         println!("hex:    {}", format_color(color, ColorFormat::Hex));
         println!("rgb:    {}", format_color(color, ColorFormat::CssRgb));
         println!("hsl:    {}", format_color(color, ColorFormat::CssHsl));
@@ -494,20 +588,84 @@ fn inspect(color: Color, json_output: bool) -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn print_one(color: Color, format: OutputFormat, json_output: bool) -> Result<(), Box<dyn Error>> {
+fn print_one(
+    color: Color,
+    format: OutputFormat,
+    json_output: bool,
+    terminal: TerminalStyle,
+) -> Result<(), Box<dyn Error>> {
     if json_output {
         print_json(&color_value(color))
     } else {
-        println!("{}", render_color(color, format));
+        println!("{}", terminal.decorate(color, &render_color(color, format)));
         Ok(())
     }
+}
+
+fn output_many(
+    colors: &[Color],
+    format: OutputFormat,
+    json_output: bool,
+    terminal: TerminalStyle,
+    css_prefix: Option<&str>,
+    png: &PngArgs,
+) -> Result<(), Box<dyn Error>> {
+    let report = match &png.png {
+        Some(path) => {
+            if path == &PathBuf::from("-") && json_output && !png.dry_run {
+                return Err(IoError::new(
+                    ErrorKind::InvalidInput,
+                    "--json cannot be combined with binary PNG stdout; use --png PATH",
+                )
+                .into());
+            }
+            if path == &PathBuf::from("-") && css_prefix.is_some() && !png.dry_run {
+                return Err(IoError::new(
+                    ErrorKind::InvalidInput,
+                    "--css-prefix cannot be combined with binary PNG stdout; use --png PATH",
+                )
+                .into());
+            }
+            let report = output_png(path, colors, png.dry_run, png.force)?;
+            if report.written {
+                eprintln!(
+                    "wrote PNG: {} ({}x{})",
+                    report.path, report.width, report.height
+                );
+            } else {
+                eprintln!(
+                    "would write PNG: {} ({}x{})",
+                    report.path, report.width, report.height
+                );
+            }
+            Some(report)
+        }
+        None => None,
+    };
+
+    if report
+        .as_ref()
+        .is_some_and(|report| report.stdout && report.written)
+    {
+        return Ok(());
+    }
+    print_many(
+        colors,
+        format,
+        json_output,
+        terminal,
+        css_prefix,
+        report.as_ref(),
+    )
 }
 
 fn print_many(
     colors: &[Color],
     format: OutputFormat,
     json_output: bool,
+    terminal: TerminalStyle,
     css_prefix: Option<&str>,
+    png: Option<&PngReport>,
 ) -> Result<(), Box<dyn Error>> {
     if json_output {
         let mut object = serde_json::Map::new();
@@ -521,10 +679,21 @@ fn print_many(
                 Value::String(css_variables(prefix, colors)?),
             );
         }
+        if let Some(png) = png {
+            object.insert(
+                "png".to_owned(),
+                json!({
+                    "path": png.path,
+                    "width": png.width,
+                    "height": png.height,
+                    "written": png.written,
+                }),
+            );
+        }
         print_json(&Value::Object(object))
     } else {
         for color in colors.iter().copied() {
-            println!("{}", render_color(color, format));
+            println!("{}", terminal.decorate(color, &render_color(color, format)));
         }
         if let Some(prefix) = css_prefix {
             println!();

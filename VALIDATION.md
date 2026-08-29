@@ -18,4 +18,4 @@ cargo doc --workspace --all-features --no-deps
 npm test
 ```
 
-The GitHub Actions workflow runs those commands and smoke-tests the npm CLI launcher.
+The GitHub Actions workflow runs those commands and smoke-tests the npm CLI launcher. CLI integration tests also exercise ANSI swatches, plain/JSON output isolation, PNG encoding, binary stdout, dry-run, and overwrite protection.
