@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script>window.__docErrors=[];window.__docReady=false;window.addEventListener('error',e=>window.__docErrors.push(String(e.error||e.message||'unknown error')));window.addEventListener('unhandledrejection',e=>window.__docErrors.push(String(e.reason||'unhandled rejection')));</script>
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chromap · 架构总览</title>
+  <script type="application/json" id="doc-meta">{"id":"architecture","title":"chromap 架构总览","status":"draft","audience":"architects","last_updated":"2026-08-29","owners":[],"revisions":[{"date":"2026-08-29","reason":"首次生成"}]}</script>
+<style id="site-tokens">
+:root{
+  --paper:#fafbfc; --surface:#ffffff; --surface-muted:#f1f4f8;
+  --ink:#171a1f; --muted:#656b73; --soft:#8a929c;
+  --rule:#d7dce3; --rule-strong:#b8c0cc;
+  --accent:#2563eb; --accent-tint:#e8f0fe; --accent-ink:#1d4ed8; --accent-lit:#3b82f6;
+  --external:#eef0f2;
+  --font-reading:"Source Han Serif SC","思源宋体","Noto Serif CJK SC","Songti SC",serif;
+  --font-title:"Noto Serif SC","Source Han Serif SC","Noto Serif CJK SC",Georgia,serif;
+  --font-mono:"SF Mono","JetBrains Mono",ui-monospace,Menlo,monospace;
+  --page-width:1280px; --toc-width:180px; --layout-gap:40px; --narrative-width:760px; --note-width:270px; --note-gap:30px; --radius:8px;
+}
+</style>
+  <style>
+    /* 缓动分工：笔迹 smoothstep、进场减速到位、离场对称；粒子在 JS 里恒为 linear */
+    :root {
+      --e-pen: linear(0, .028 10%, .104 20%, .216 30%, .352 40%, .5 50%, .648 60%, .784 70%, .896 80%, .972 90%, 1);
+      --e-in: cubic-bezier(.22, 1, .36, 1);
+      --e-out: cubic-bezier(.65, 0, .35, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--paper); color: var(--ink); }
+    body { margin: 0; font: 17px/1.8 var(--font-reading); }
+    .page { width: min(var(--page-width), calc(100% - 48px)); margin: 0 auto 96px; }
+    .layout { display: grid; grid-template-columns: var(--toc-width) minmax(0, calc(var(--narrative-width) + var(--note-width) + var(--note-gap))); gap: var(--layout-gap); align-items: start; }
+    .toc { position: sticky; top: 32px; padding-top: 76px; color: var(--muted); font: 15px/1.5 var(--font-reading); }
+    .toc strong { display: block; margin-bottom: 10px; color: var(--ink); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+    .toc a { display: block; padding: 6px 0; color: inherit; text-decoration: none; }
+    .toc a:hover, .toc a:focus-visible { color: var(--accent); text-decoration: underline; outline: none; }
+    .content { min-width: 0; }
+    .hero { max-width: var(--narrative-width); padding: 72px 0 48px; border-bottom: 1px solid var(--rule); }
+    .eyebrow, .note-label { color: var(--accent); font: 600 13px/1.4 var(--font-reading); letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 12px 0 16px; font: 700 32px/1.2 var(--font-title); letter-spacing: -.02em; }
+    h2 { margin: 72px 0 22px; font-size: 22px; font-weight: 650; line-height: 1.25; }
+    h3 { margin: 40px 0 12px; font-size: 17px; font-weight: 600; line-height: 1.35; }
+    .lede { color: var(--muted); font-size: 22px; line-height: 1.5; }
+    a { color: var(--accent); }
+
+    /* 主叙事列是合同：每一个阅读块都归它 */
+    section > h2, section > h3, section > p, section > ol, section > ul, section > .annotation-row,
+    section > .callout, section > .technical-note, section > figure,
+    section > .table-scroll, blockquote {
+      width: min(var(--narrative-width), 100%);
+    }
+    p, li { overflow-wrap: break-word; }
+    .explain { max-width: 34em; }
+    .explain > strong:first-child { color: var(--ink); }
+    ul.features > li { margin-bottom: 10px; }
+    ol.walk > li { margin-bottom: 8px; }
+    code { font-family: var(--font-mono); font-size: 15px; }
+
+    .note-ref { margin-left: 3px; font: 600 13px/1 var(--font-reading); vertical-align: super; white-space: nowrap; }
+    .note-ref a { display: inline-grid; width: 1.4em; height: 1.4em; place-items: center; border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); text-decoration: none; }
+    .note-ref a:focus-visible, .note-ref a:hover { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .annotation-row { display: grid; grid-template-columns: minmax(0, var(--narrative-width)) var(--note-width); gap: var(--note-gap); align-items: start; width: min(calc(var(--narrative-width) + var(--note-width) + var(--note-gap)), 100%); }
+    .annotation-main { min-width: 0; }
+    .annotation-main > :first-child { margin-top: 0; }
+    .annotation-main > :last-child { margin-bottom: 0; }
+    .sidenote { width: auto; margin: 0; padding: 10px 0 10px 14px; border-left: 2px solid var(--accent); color: var(--muted); font: 13px/1.65 var(--font-reading); }
+    .sidenote .note-label { display: block; margin-bottom: 4px; }
+    .sidenote code { overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 13px; }
+    .section-ref { color: var(--accent); font: 600 15px/1.5 var(--font-reading); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
+    .section-ref:hover, .section-ref:focus-visible { color: var(--ink); outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .callout { margin: 24px 0; padding: 16px 20px; border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--accent-tint); }
+    .callout-title { margin-bottom: 4px; font-weight: 700; }
+    .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--accent-tint); color: var(--accent-ink); font-size: 13px; line-height: 1.6; }
+
+    /* 图卡：全页唯一一条极浅阴影 */
+    figure.plate { margin: 30px 0; padding: 14px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); box-shadow: 0 1px 2px rgba(23, 26, 31, .06); }
+    figure.plate.zoomable { position: relative; }
+    figure.plate .scroll { overflow-x: auto; overscroll-behavior-inline: contain; }
+    figure.plate svg, figure.plate img { display: block; width: 100%; height: auto; }
+    figcaption { min-height: 30px; margin-top: 10px; padding-right: 42px; color: var(--muted); font: 15px/1.6 var(--font-reading); }
+    .figure-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
+    .replay { padding: 4px 14px; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--accent); font: 15px/1.6 var(--font-reading); cursor: pointer; }
+    .replay:hover { background: var(--accent-tint); }
+    .replay:focus-visible, figure.seq:focus-visible, .step:focus-visible, .node:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .step-hint { margin: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .legend { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 10px; color: var(--muted); font-size: 13px; }
+    .legend svg { width: 36px; height: 12px; margin-right: 6px; vertical-align: middle; }
+    .legend line, .legend rect { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+    .legend .lg-async { stroke-dasharray: 6 4; }
+    .legend .lg-bound { stroke-width: 1; stroke-dasharray: 4 4; }
+    .legend .lg-thin { stroke-width: 1; }
+    .legend .lg-dot { fill: var(--muted); stroke: none; }
+
+    /* SVG 字阶三档（与页面五档独立）与节点类型处理，全部走 token */
+    figure svg text { font: 400 12px var(--font-reading); fill: var(--muted); }
+    figure svg .node text, figure svg .actor text { font: 600 14px var(--font-reading); fill: var(--ink); }
+    figure svg .sub { font: 400 12px var(--font-mono); fill: var(--muted); }
+    figure svg .node rect, figure svg .actor rect { fill: var(--accent-tint); stroke: var(--accent); stroke-width: 1.5; }
+    figure svg .node.focal .inner { fill: none; stroke: var(--accent); stroke-width: 1; }
+    figure svg .node.external rect { fill: var(--external); stroke: var(--muted); }
+    figure svg .node.store rect, figure svg .node.role circle { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; }
+    figure svg .node.store line { stroke: var(--muted); stroke-width: 1; }
+    figure svg .boundary { fill: none; stroke: var(--muted); stroke-dasharray: 4 4; }
+    figure svg .edge { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+    figure svg .edge.async { stroke-dasharray: 6 4; }
+    figure svg .lifeline { stroke: var(--rule); stroke-width: 1; }
+    figure svg .arr path { fill: var(--muted); }
+    figure svg .arr.lit path { fill: var(--accent); }
+    figure svg [data-node], figure svg [data-explains], figure svg .step { cursor: pointer; }
+
+    /* 责任泳道带、时序片段框与激活条：结构脚手架，不是节点 */
+    figure svg .lane { fill: var(--surface-muted); }
+    figure svg .lane-name { fill: var(--muted); }
+    figure svg .act { fill: var(--accent-tint); stroke: var(--accent); stroke-width: 1; }
+    figure svg .frag { fill: none; stroke: var(--rule-strong); stroke-width: 1; }
+    figure svg .frag-tab { fill: var(--surface-muted); stroke: var(--rule-strong); stroke-width: 1; }
+    figure svg .frag-div { stroke: var(--rule-strong); stroke-width: 1; }
+    figure svg .edge.ret { stroke-width: 1; }
+
+    /* A 层：拓扑序错峰（--i 来自拓扑深度）+ 边 draw-in；隐藏初态只在 html.motion-ready 下成立 */
+    figure.anim .node { transition: opacity .5s var(--e-in); transition-delay: calc(var(--i, 0) * 120ms); }
+    html.motion-ready figure.anim:not(.in-view) .node { opacity: 0; }
+    figure.anim path.edge.draw { transition: stroke-dashoffset .8s var(--e-pen) calc(var(--i, 0) * 120ms + 340ms); }
+
+    /* A 层交互：焦点降噪压暗其余，而不是只加亮邻居；不引入第二色相 */
+    figure.anim.hl .node, figure.anim.hl .edge { transition: opacity .12s; }
+    figure.anim.hl .node.dim, figure.anim.hl .edge.dim { opacity: .5; }
+    figure.anim .edge.hl { stroke: var(--accent); }
+    #fig-context .edge.hl { marker-end: url(#fig-context-arr-lit); }
+    #fig-layers .edge.hl { marker-end: url(#fig-layers-arr-lit); }
+    #fig-palette .edge.hl { marker-end: url(#fig-palette-arr-lit); }
+    figure.anim [data-node]:hover rect, figure.anim [data-node]:focus-visible rect,
+    figure.anim [data-node]:hover circle, figure.anim [data-node]:focus-visible circle { stroke: var(--accent-lit); }
+
+    /* A 层：逐步点亮三态 + 第二通道（线宽 / 字重）；终态全亮是三条降级路径共用的静态图 */
+    .motion-ready .step { opacity: .3; transition: opacity .35s ease; }
+    .step .edge { transition: stroke .35s ease, stroke-width .2s ease; }
+    .step .label { fill: var(--surface); stroke: var(--rule); transition: fill .35s ease, stroke .35s ease; }
+    .step text { transition: fill .35s ease; }
+    .step.done { opacity: .6; }
+    .step.cur { opacity: 1; }
+    .step.done .edge, .step.cur .edge { stroke: var(--accent); }
+    #fig-install .step.done .edge, #fig-install .step.cur .edge { marker-end: url(#fig-install-arr-lit); }
+    .step.done .label, .step.cur .label { fill: var(--accent-tint); stroke: var(--accent); }
+    .step.done text, .step.cur text { fill: var(--accent-ink); }
+    .step.cur .edge { stroke-width: 2.5; }
+    .step.cur text { font-weight: 600; }
+    .step.focus .edge { stroke-width: 2.5; }
+    figure.seq.ended .step { opacity: 1; }
+
+    /* 流粒子 */
+    .flow-dot { fill: var(--accent); pointer-events: none; }
+
+    /* 图文联动落点高亮 */
+    .flash { background: var(--accent-tint); outline: 2px solid var(--accent); outline-offset: 6px; transition: background .3s ease; }
+
+    /* 插图查看器（运行时按需生成 <dialog>）*/
+    .figure-zoom-trigger { position: absolute; right: 15px; bottom: 14px; width: 30px; height: 30px; padding: 0; border: 1px solid var(--rule-strong); border-radius: 50%; background: var(--surface); color: var(--accent); font-family: var(--font-reading); cursor: zoom-in; }
+    .figure-zoom-trigger::before { content: ""; position: absolute; left: 8px; top: 7px; width: 9px; height: 9px; border: 1.5px solid currentColor; border-radius: 50%; }
+    .figure-zoom-trigger::after { content: ""; position: absolute; left: 17px; top: 17px; width: 7px; height: 1.5px; background: currentColor; transform: rotate(45deg); transform-origin: left center; }
+    .figure-zoom-trigger:hover { border-color: var(--accent); background: var(--surface-muted); }
+    .figure-zoom-trigger:focus-visible, .figure-lightbox button:focus-visible, .zoom-viewport:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .zoom-placeholder { width: 100%; background: var(--surface-muted); border-radius: 4px; }
+    .figure-lightbox { width: min(96vw, 1600px); height: min(94vh, 1200px); max-width: none; max-height: none; padding: 0; overflow: hidden; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); color: var(--ink); }
+    .figure-lightbox::backdrop { background: rgba(23, 26, 31, .72); }
+    .figure-lightbox[open] { display: block; }
+    .zoom-shell { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; }
+    .zoom-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 52px; padding: 8px 12px 8px 18px; border-bottom: 1px solid var(--rule); background: var(--surface); font: 13px/1.4 var(--font-reading); }
+    .zoom-caption { min-width: 0; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+    .zoom-controls { display: flex; align-items: center; flex: none; gap: 6px; }
+    .zoom-controls button { min-width: 34px; height: 34px; padding: 0 9px; border: 1px solid var(--rule); border-radius: 7px; background: var(--surface); color: var(--ink); font: 600 13px/1 var(--font-reading); cursor: pointer; }
+    .zoom-controls button:hover { border-color: var(--accent); color: var(--accent); background: var(--surface-muted); }
+    .zoom-controls .zoom-close { margin-left: 6px; font-size: 17px; }
+    .zoom-viewport { min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--surface-muted); }
+    .zoom-stage { display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 24px; }
+    .zoom-stage > svg, .zoom-stage > img { display: block; flex: none; max-width: none !important; height: auto; background: var(--surface); border: 1px solid var(--rule); }
+    .zoom-stage .step, .zoom-stage .node { opacity: 1; }
+    body.figure-zoom-open { overflow: hidden; }
+
+    .technical-note { margin: 24px 0; overflow: hidden; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface-muted); }
+    .technical-note summary { cursor: pointer; padding: 10px 14px; color: var(--accent); font: 600 13px/1.4 var(--font-reading); letter-spacing: .06em; }
+    .technical-note p { margin: 0; padding: 0 14px 14px; font-size: 15px; }
+    .table-scroll { overflow-x: auto; overscroll-behavior-inline: contain; }
+    table { width: 100%; min-width: 620px; border-collapse: collapse; font: 15px/1.6 var(--font-reading); }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+    th { color: var(--accent); }
+    footer.footnotes { width: min(var(--narrative-width), 100%); margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--rule); color: var(--muted); font: 15px/1.6 var(--font-reading); }
+
+    /* ?motion=static：取证帧，一切过渡关闭、控件与粒子隐藏 */
+    html[data-motion="static"] * { transition: none !important; animation: none !important; }
+    html[data-motion="static"] .flow-dot, html[data-motion="static"] .replay { display: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      figure.anim .node, figure.anim .edge { opacity: 1; transition: none; }
+      figure.anim path.edge { stroke-dashoffset: 0 !important; transition: none; }
+      .flow-dot { display: none; }
+      figure.seq:not([data-frame="step"]) .step { opacity: 1 }
+      .step, .step .edge, .step .label, .step text, .flash { transition: none; }
+    }
+    @media (max-width: 1320px) {
+      .layout { display: block; }
+      .toc { position: static; max-width: var(--narrative-width); padding: 24px 0 0; }
+      .toc a { display: inline-block; margin-right: 16px; }
+    }
+    @media (max-width: 960px) {
+      .page { width: min(100% - 32px, var(--page-width)); }
+      .annotation-row { display: block; width: auto; }
+      .sidenote { width: auto; margin: 18px 0; padding: 10px 14px; border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface-muted); font-size: 13px; }
+    }
+    @media (max-width: 600px) { .figure-lightbox { width: 100vw; height: 100dvh; border: 0; border-radius: 0; } .zoom-toolbar { gap: 8px; padding-left: 12px; } .zoom-caption { max-width: 72px; } .zoom-controls { gap: 4px; } .zoom-controls button { min-width: 32px; height: 32px; padding: 0 7px; } .zoom-stage { padding: 16px; } }
+    @media print {
+      .page { width: auto; margin: 0; }
+      .layout { display: block; }
+      .toc { display: none; }
+      .sidenote { width: auto; margin: 12px 0; break-inside: avoid; }
+      figure, .callout, .technical-note { break-inside: avoid; }
+      figure.anim .node, figure.anim .edge { opacity: 1 !important; transition: none !important; }
+      figure.anim path.edge { stroke-dashoffset: 0 !important; }
+      .flow-dot, .replay, .figure-zoom-trigger, .figure-lightbox { display: none !important; }
+      figure.seq .step { opacity: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page"><div class="layout">
+    <nav class="toc" aria-label="页面目录"><strong>目录</strong><a href="#product">产品介绍</a><a href="#features">功能与特性</a><a href="#overview">系统总览</a><a href="#walkthrough">主走查</a><a href="#layers">核心库分层</a><a href="#palette">调色板数据流</a><a href="#install">首次运行时序</a><a href="#tradeoffs">取舍与风险</a></nav>
+    <div class="content"><header class="hero">
+      <div class="eyebrow">颜色工具库 · 架构总览</div>
+      <h1>chromap · 架构总览</h1>
+      <p class="lede">一个颜色只存一次——规范的伽马 sRGBA；之后所有换算、混色、调色板与对比度都从这一份表示出发，同一个结果可以变成 ANSI 色块、PNG 色卡或 JSON。</p>
+      <p><span class="badge">2026-08-29</span> <span class="badge">快照 82bad91</span> <span class="badge">draft</span></p>
+    </header>
+
+    <section id="product">
+      <h2>01 · chromap 把颜色运算收敛到一个规范表示上</h2>
+      <div class="annotation-row">
+      <div class="annotation-main">
+        <p>chromap 是一个 Rust 颜色工具库，外加一个叫 <code>chromap</code> 的命令行。它回答三件日常问题：这个颜色换成别的写法是什么；一组颜色怎么排得看起来顺；前景压在背景上够不够清楚。</p>
+        <p>库内部只认一种存储：带 alpha 的伽马编码 sRGBA，分量都在 0 到 1 之间。要感知运算时先换到 OKLab/OKLCH，算完再换回来——每一次换算都从规范表示出发、回到规范表示，中间不留第二种真值。超出 sRGB 色域的颜色用二分法只降饱和度（chroma），明度和色相尽量不动。</p>
+        <p>命令行把这套能力暴露成十一个子命令，输出走三条路：给人看的终端色块、可以直接进管道的 <code>--json</code>、以及带棋盘格衬底的 PNG 色卡。它通过 npm 分发：包里带全部 Rust 源码，第一次运行时在本机编译进用户缓存，之后直接复用。</p>
+        <p>它不追求成为色彩管理的全部：没有 ICC 配置文件，CMYK 只是数学近似，色差也不是 CIEDE2000。边界在<a class="section-ref" href="#tradeoffs">取舍一节</a>里逐条说清。</p>
+      </div>
+      <aside class="sidenote" id="note-canonical" role="note"><span class="note-label">01 · 为什么只存伽马 sRGBA</span>这是 CSS、终端与位图共同的语言，进出都不需要转换设备。代价是每次进感知空间都要重算一次矩阵与立方根——一次运算微不足道，但意味着库里不存在"以 OKLCH 为真值"的路径。<a class="section-ref" href="#layers">分层那一节</a>画的就是这一点。</aside>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>02 · 八件它替你做的事</h2>
+      <ul class="features">
+        <li><strong>一种规范存储</strong>：颜色统一存成伽马 sRGBA 加 alpha，所有运算共用同一份表示；适合不希望在两套表示之间出现漂移的代码。</li>
+        <li><strong>CSS 子集解析</strong>：hex（3/4/6/8 位）、<code>rgb()</code>/<code>hsl()</code>、CSS 具名色与 <code>transparent</code>；适合直接吃前端与设计稿里的字符串。</li>
+        <li><strong>七种空间互转</strong>：linear sRGB、HSL、HSV、CMYK、OKLab、OKLCH 双向往返；适合把"换个写法"和"换个空间"分开处理。</li>
+        <li><strong>感知混色与渐变</strong>：默认在 OKLab 上插值，色相可选走短弧或长弧；适合做不发灰的过渡。</li>
+        <li><strong>调色板生成</strong>：明度标尺、黄金角、互补/三角/四角和声、tints/shades/tones；适合一次拿到一套成体系的颜色。</li>
+        <li><strong>色域映射</strong>：超出 sRGB 时二分收敛只降 chroma，保住明度与色相；适合把设计稿里的 Display-P3 值安全落地<sup class="note-ref"><a href="#note-gamut" role="doc-noteref" aria-describedby="note-gamut" aria-label="查看关于色域边界的注释">2</a></sup>。</li>
+        <li><strong>WCAG 对比度</strong>：测比值、从候选里挑、自动沿明度修到 AA/AAA；适合在生成配色的同时保证可读。</li>
+        <li><strong>三种交付</strong>：ANSI 色块、≤256 色的 PNG 色卡、<code>--json</code> 结构化输出；适合终端预览、文档插图和脚本消费。</li>
+      </ul>
+      <p>这八条到此为止：每条能力内部怎么算属于下一层文档。它们共享同一条主线，也就是<a class="section-ref" href="#walkthrough">主走查</a>那一条。</p>
+      <div class="annotation-row">
+      <div class="annotation-main">
+        <p>这八条能力里，前六条属于库、后两条属于命令行。库不认识终端也不认识 PNG；命令行不自己算颜色，只决定把哪一段结果交给谁渲染。这个分工就是下面两张图的分界。</p>
+      </div>
+      <aside class="sidenote" id="note-gamut" role="note"><span class="note-label">02 · 色域映射只发生在一条边上</span>库里 OKLCH 到 sRGB 有两扇门：一扇只收已在色域内的值（越界就报错），另一扇自动收敛。命令行走的是第二扇，因此用户永远不会因为"颜色太鲜艳"而拿到错误。</aside>
+      </div>
+    </section>
+
+    <section id="overview">
+      <h2>03 · 一条调用链，三个出口</h2>
+      <p>整个仓库交付两段程序：<strong>npm 启动器</strong>负责把调用方的要求转交出去，<strong>chromap CLI</strong> 负责解析与渲染，真正的颜色运算全部在<strong>核心库</strong>里。CLI 是唯一决定输出形态的地方——它把 ANSI 色块写进<strong>终端</strong>、把 PNG 色卡写进<strong>文件系统</strong>、把 JSON 留给标准输出。</p>
+
+      <!-- 图计划: 系统上下文图 · 无模式 · 命题句「调用方只面对 npm 启动器，颜色运算只在核心库里，三种出口都由 CLI 一个人决定」· 8节点/7边 · 预算删掉了终端的 256 色降级路径与 Cargo 工具链本身 · A层动效: 拓扑序错峰 + 边 draw-in；交互: 焦点降噪 + 图文联动 -->
+      <figure class="plate anim zoomable" id="context">
+        <div class="scroll">
+        <svg id="fig-context" viewBox="0 0 720 330" role="group" aria-labelledby="fig-context-title fig-context-desc" style="min-width:720px">
+          <title id="fig-context-title">chromap 系统上下文</title>
+          <desc id="fig-context-desc">用户与脚本经 npm 启动器调用 chromap CLI，CLI 调用核心库完成颜色运算，并把 ANSI 色块送到终端、把 PNG 色卡写进文件。</desc>
+          <defs>
+            <marker id="fig-context-arr" class="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="fig-context-arr-lit" class="arr lit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+          <!-- 绘制顺序即几何：分组底框 → 边 → 边标签 → 不透明节点；--i = 拓扑深度（边取源层号 + 0.5） -->
+          <rect class="boundary" x="150" y="120" width="510" height="130" rx="6"/>
+          <text x="648" y="138" text-anchor="end">chromap 包（本仓库）</text>
+          <g class="edges">
+            <path class="edge draw" data-from="user" data-to="npm" style="--i:0.5" d="M 58,176 H 156" marker-end="url(#fig-context-arr)"/>
+            <text x="107" y="168" text-anchor="middle">命令行</text>
+            <path class="edge draw async" data-from="script" data-to="npm" style="--i:0.5" d="M 82,84 V 88 Q 82,96 90,96 H 214 Q 222,96 222,104 V 142" marker-end="url(#fig-context-arr)"/>
+            <text x="170" y="86" text-anchor="middle">spawn</text>
+            <path class="edge draw" data-from="npm" data-to="cli" style="--i:1.5" d="M 288,176 H 346" marker-end="url(#fig-context-arr)"/>
+            <text x="317" y="168" text-anchor="middle">透传参数</text>
+            <path class="edge draw async" data-from="npm" data-to="cache" style="--i:1.5" d="M 222,210 V 258" marker-end="url(#fig-context-arr)"/>
+            <text x="234" y="238">首次编译</text>
+            <path class="edge draw" data-from="cli" data-to="core" style="--i:2.5" d="M 494,176 H 516" marker-end="url(#fig-context-arr)"/>
+            <text x="505" y="168" text-anchor="middle">调用</text>
+            <path class="edge draw" data-from="cli" data-to="tty" style="--i:2.5" d="M 424,142 V 88" marker-end="url(#fig-context-arr)"/>
+            <text x="436" y="116">ANSI 色块</text>
+            <path class="edge draw" data-from="cli" data-to="png" style="--i:2.5" d="M 424,210 V 286 H 514" marker-end="url(#fig-context-arr)"/>
+            <text x="469" y="278" text-anchor="middle">写 PNG</text>
+          </g>
+          <g class="node role" data-node="user" data-depth="0" style="--i:0" data-explains="product" aria-label="用户"><circle cx="34" cy="176" r="22"/><text x="34" y="220" text-anchor="middle">用户</text></g>
+          <g class="node external" data-node="script" data-depth="0" style="--i:0" data-explains="features" aria-label="脚本与管道"><rect x="16" y="32" width="132" height="48" rx="6"/><text x="82" y="61" text-anchor="middle">脚本与管道</text></g>
+          <g class="node external" data-node="tty" data-depth="3" style="--i:3" data-explains="tradeoffs" aria-label="终端"><rect x="350" y="32" width="140" height="52" rx="6"/><text x="420" y="54" text-anchor="middle">终端</text><text class="sub" x="420" y="76" text-anchor="middle">TTY</text></g>
+          <g class="node" data-node="npm" data-depth="1" style="--i:1" data-explains="install" aria-label="npm 启动器"><rect x="160" y="146" width="124" height="60" rx="6"/><text x="222" y="168" text-anchor="middle">npm 启动器</text><text class="sub" x="222" y="190" text-anchor="middle">Node</text></g>
+          <g class="node focal" data-node="cli" data-depth="2" style="--i:2" data-explains="features" aria-label="chromap CLI"><rect x="350" y="146" width="140" height="60" rx="6"/><rect class="inner" x="353" y="149" width="134" height="54" rx="4"/><text x="420" y="168" text-anchor="middle">chromap CLI</text><text class="sub" x="420" y="190" text-anchor="middle">11 个子命令</text></g>
+          <g class="node" data-node="core" data-depth="3" style="--i:3" data-explains="layers" aria-label="核心库"><rect x="520" y="146" width="132" height="60" rx="6"/><text x="586" y="168" text-anchor="middle">核心库</text><text class="sub" x="586" y="190" text-anchor="middle">Rust</text></g>
+          <g class="node external" data-node="cache" data-depth="2" style="--i:2" data-explains="install" aria-label="Cargo 构建缓存"><rect x="166" y="262" width="132" height="48" rx="6"/><text x="232" y="291" text-anchor="middle">Cargo 构建缓存</text></g>
+          <g class="node store" data-node="png" data-depth="3" style="--i:3" data-explains="palette" aria-label="PNG 色卡文件"><rect x="520" y="262" width="132" height="48" rx="6"/><line x1="520" y1="269" x2="652" y2="269"/><text x="586" y="295" text-anchor="middle">PNG 色卡</text></g>
+        </svg>
+        </div>
+        <figcaption>调用方只面对 npm 启动器，颜色运算只发生在核心库里，三种出口都由 CLI 一个人决定。</figcaption>
+        <div class="legend">
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><line x1="1" y1="6" x2="35" y2="6"/></svg>进程内/进程间调用</span>
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><line class="lg-async" x1="1" y1="6" x2="35" y2="6"/></svg>只在需要时发生</span>
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><rect class="lg-bound" x="1" y="2" width="34" height="8" rx="2"/></svg>包边界</span>
+        </div>
+      </figure>
+      <p class="explain"><strong>八个盒子各自负责一件事。</strong>用户敲的是 <code>chromap</code>，脚本 spawn 的也是它，但两者真正落到的是 npm 启动器；启动器不认识颜色，它只保证有一个可用的可执行文件，缺了就让 Cargo 现场编译一次。chromap CLI 是焦点节点：它解析参数、调用核心库、然后决定结果去哪——终端拿 ANSI 色块、文件系统拿 PNG、标准输出拿纯文本或 JSON。核心库对这三条出路一无所知。</p>
+      <p class="explain"><strong>走一遍取色路径：</strong>用户敲 <code>chromap convert "#3b82f6"</code> → npm 启动器找到可执行文件并把参数原样透传 → chromap CLI 调核心库完成换算 → 把 hex 写进标准输出。换 <code>--png out.png</code> 时，前三步不变，最后一步改道去文件系统。</p>
+      <p class="explain"><strong>一个容易混的边界：</strong>终端与文件系统画在包边界之外，因为换一个输出目标（比如写成 stdout 的二进制 PNG）不影响包内的三个盒子；Cargo 构建缓存也在边界之外，它属于用户机器，而不是这个包。按预算删掉的是终端的 256 色降级细节与 Cargo 工具链本身——前者是 CLI 内部的一次分支，后者是所有人的公共依赖。</p>
+    </section>
+
+    <section id="walkthrough">
+      <h2>04 · 主走查：从色值到色卡</h2>
+      <p>下面这条链贯穿全系统，后面三张图都是它的某一段放大。六个环节各点名它经过的组件与它做的一件事。</p>
+      <ol class="walk">
+        <li><strong>入参解析</strong>——chromap CLI 拆出子命令、目标色、数量与输出开关，并在入口一次性判定要不要 ANSI、要不要 JSON。</li>
+        <li><strong>色值规范化</strong>——核心库的解析器把 CSS 子集字符串变成规范 sRGBA；不认识的写法在这里就报错，不往后传。</li>
+        <li><strong>调色板生成</strong>——在 OKLCH 上按和声、黄金角或明度标尺铺开，得到一组仍可能超出 sRGB 的候选色。</li>
+        <li><strong>色域映射</strong>——超出 sRGB 的候选逐个做二分收敛，只降 chroma，明度与色相尽量保住。</li>
+        <li><strong>对比度校验</strong>——按 WCAG 公式算前景对背景的比值，不达标就沿明度二分修复，并在变亮与变暗之间取感知距离更小的那个。</li>
+        <li><strong>渲染交付</strong>——同一份结果走三条出口之一：ANSI 色块、PNG 色卡、JSON 文本。</li>
+      </ol>
+      <div class="callout">
+        <div class="callout-title">这条走查的名字在全站通用</div>
+        「从色值到色卡」也是特性级文档要说明自己承担哪一段的那条主线；换名字会让两层文档对不上。
+      </div>
+    </section>
+
+    <section id="layers">
+      <h2>05 · 核心库分层：所有道路都经过规范存储</h2>
+      <p>把核心库按"谁依赖谁"拉开，是一张以<strong>规范存储</strong>为中心的图：解析层只往里写，输出格式只从里读，空间转换与它双向往来，感知运算则同时依赖这两者。没有任何一条路能绕开规范存储直达另一个空间。</p>
+
+      <!-- 图计划: 模块分层图 · 无模式 · 命题句「解析只写、格式化只读、空间转换双向，感知运算必须借道规范存储」· 5节点/6边 · 预算删掉了错误类型与 serde 可选特性 · A层动效: 拓扑序错峰 + 边 draw-in；交互: 焦点降噪 + 图文联动 -->
+      <figure class="plate anim zoomable" id="layers-fig">
+        <div class="scroll">
+        <svg id="fig-layers" viewBox="0 0 720 320" role="group" aria-labelledby="fig-layers-title fig-layers-desc" style="min-width:720px">
+          <title id="fig-layers-title">核心库的分层依赖</title>
+          <desc id="fig-layers-desc">解析层把输入写进规范存储，空间转换与规范存储双向往来，感知运算依赖空间转换与规范存储，输出格式化只从规范存储读取。</desc>
+          <defs>
+            <marker id="fig-layers-arr" class="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="fig-layers-arr-lit" class="arr lit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+          <!-- 绘制顺序即几何：边 → 边标签 → 不透明节点；--i = 拓扑深度（边取源层号 + 0.5） -->
+          <g class="edges">
+            <path class="edge draw" data-from="parse" data-to="store" style="--i:0.5" d="M 178,160 H 279" marker-end="url(#fig-layers-arr)"/>
+            <text x="228" y="152" text-anchor="middle">写入</text>
+            <path class="edge draw" data-from="spaces" data-to="store" style="--i:1.5" d="M 340,94 V 124" marker-end="url(#fig-layers-arr)"/>
+            <text x="328" y="112" text-anchor="end">转入</text>
+            <path class="edge draw" data-from="store" data-to="spaces" style="--i:2.5" d="M 380,124 V 94" marker-end="url(#fig-layers-arr)"/>
+            <text x="392" y="112">转出</text>
+            <path class="edge draw" data-from="store" data-to="ops" style="--i:2.5" d="M 439,160 H 540" marker-end="url(#fig-layers-arr)"/>
+            <text x="490" y="152" text-anchor="middle">读取</text>
+            <path class="edge draw" data-from="ops" data-to="spaces" style="--i:3.5" d="M 621,130 V 54 H 441" marker-end="url(#fig-layers-arr)"/>
+            <text x="531" y="46" text-anchor="middle">依赖 OKLab 距离</text>
+            <path class="edge draw" data-from="store" data-to="format" style="--i:3.5" d="M 360,194 V 230" marker-end="url(#fig-layers-arr)"/>
+            <text x="372" y="216">格式化</text>
+          </g>
+          <g class="node" data-node="spaces" data-depth="0" style="--i:0" data-explains="tradeoffs" aria-label="空间转换"><rect x="285" y="24" width="150" height="60" rx="6"/><text x="360" y="46" text-anchor="middle">空间转换</text><text class="sub" x="360" y="68" text-anchor="middle">linear · HSL · OKLCH</text></g>
+          <g class="node focal" data-node="store" data-depth="1" style="--i:1" data-explains="layers" aria-label="规范存储"><rect x="285" y="130" width="150" height="60" rx="6"/><rect class="inner" x="288" y="133" width="144" height="54" rx="4"/><text x="360" y="152" text-anchor="middle">规范存储</text><text class="sub" x="360" y="174" text-anchor="middle">伽马 sRGBA + alpha</text></g>
+          <g class="node" data-node="parse" data-depth="0" style="--i:0" data-explains="product" aria-label="解析层"><rect x="24" y="130" width="150" height="60" rx="6"/><text x="99" y="152" text-anchor="middle">解析层</text><text class="sub" x="99" y="174" text-anchor="middle">CSS 子集</text></g>
+          <g class="node" data-node="ops" data-depth="2" style="--i:2" data-explains="palette" aria-label="感知运算"><rect x="546" y="130" width="150" height="60" rx="6"/><text x="621" y="152" text-anchor="middle">感知运算</text><text class="sub" x="621" y="174" text-anchor="middle">混色 · 对比度</text></g>
+          <g class="node" data-node="format" data-depth="2" style="--i:2" data-explains="features" aria-label="输出格式化"><rect x="285" y="236" width="150" height="60" rx="6"/><text x="360" y="258" text-anchor="middle">输出格式化</text><text class="sub" x="360" y="280" text-anchor="middle">hex · rgba8 · JSON</text></g>
+        </svg>
+        </div>
+        <figcaption>解析只写、格式化只读、空间转换双向，感知运算必须借道规范存储。</figcaption>
+        <div class="legend">
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><line x1="1" y1="6" x2="35" y2="6"/></svg>单向依赖</span>
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><line x1="1" y1="3" x2="35" y2="3"/><line x1="1" y1="9" x2="35" y2="9"/></svg>双向转换</span>
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><rect x="1" y="1" width="34" height="10" rx="2"/><rect x="4" y="4" width="28" height="4" rx="1"/></svg>本图焦点</span>
+        </div>
+      </figure>
+      <p class="explain"><strong>五个盒子各自负责一件事。</strong>解析层只认识字符串，它把合法输入送进规范存储，非法输入就地变成错误；空间转换是唯一懂"另一个空间"的模块，和规范存储之间是双向的两条边；感知运算（混色、调色板、对比度、距离）需要感知几何，所以它依赖空间转换，再由空间转换替它回规范存储；输出格式化是纯函数，只读不写。</p>
+      <p class="explain"><strong>走一遍调色板路径：</strong>感知运算要生成调色板 → 先经空间转换把基准色转到 OKLCH → 在 OKLCH 上铺开候选 → 每个候选经空间转换回到 sRGB（超界的在这里收敛）→ 落回规范存储交给输出格式化。中间任何一步都不直接持有第二种表示。</p>
+      <p class="explain"><strong>一个容易混的边界：</strong>「感知运算 → 空间转换」这条边说的是依赖，不是数据流——运算层调用的是换算函数，而不是把颜色存过去。按预算删掉的是错误类型与可选的 serde 特性，它们不改变这张依赖方向。</p>
+    </section>
+
+    <section id="palette">
+      <h2>06 · 调色板的数据流：一条主线，三个出口</h2>
+      <p>拿主走查里最长的一段——<code>chromap palette --png out.png</code>——按"这一步归谁负责"分成三条泳道。入口只做一次解析，颜色核心负责全部运算，输出渲染把同一份结果翻译成三种形态。粒子沿主线跑，能看到数据在哪里分岔。</p>
+
+      <!-- 图计划: 数据流图（责任泳道） · 无模式 · 命题句「颜色核心产出唯一一份色板，入口与渲染层都不改它的值」· 8节点/7边 · 预算删掉了 CSS 变量前缀输出与 --dry-run 分支 · A层动效: 流粒子 + 拓扑序错峰；交互: 焦点降噪 -->
+      <figure class="plate anim zoomable" id="palette-fig">
+        <div class="scroll">
+        <svg id="fig-palette" viewBox="0 0 720 400" role="group" aria-labelledby="fig-palette-title fig-palette-desc" style="min-width:720px">
+          <title id="fig-palette-title">一次调色板命令的数据流</title>
+          <desc id="fig-palette-desc">命令行入口解析参数后，颜色核心依次做色值解析、调色板生成、色域映射与对比度校验，最后由输出渲染层写成终端色块、PNG 色卡或 JSON。</desc>
+          <defs>
+            <marker id="fig-palette-arr" class="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="fig-palette-arr-lit" class="arr lit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+          <!-- 绘制顺序：责任带 → 边 → 边标签 → 不透明节点 → 不可见流轨道 -->
+          <g class="lanes">
+            <rect class="lane" x="8" y="12" width="704" height="92" rx="6"/>
+            <rect class="lane" x="8" y="108" width="704" height="148" rx="6"/>
+            <rect class="lane" x="8" y="260" width="704" height="128" rx="6"/>
+            <text class="lane-name" x="20" y="32">命令行入口</text>
+            <text class="lane-name" x="20" y="128">颜色核心</text>
+            <text class="lane-name" x="20" y="280">输出渲染</text>
+          </g>
+          <g class="edges">
+            <path class="edge draw" data-from="args" data-to="parse" style="--i:0.5" d="M 112,88 V 126" marker-end="url(#fig-palette-arr)"/>
+            <text x="124" y="110">色值字符串</text>
+            <path class="edge draw" data-from="parse" data-to="gen" style="--i:1.5" d="M 200,158 H 270" marker-end="url(#fig-palette-arr)"/>
+            <text x="235" y="150" text-anchor="middle">规范 Color</text>
+            <path class="edge draw" data-from="gen" data-to="map" style="--i:2.5" d="M 448,158 H 518" marker-end="url(#fig-palette-arr)"/>
+            <text x="483" y="150" text-anchor="middle">OKLCH</text>
+            <path class="edge draw" data-from="map" data-to="check" style="--i:3.5" d="M 608,188 V 218 H 450" marker-end="url(#fig-palette-arr)"/>
+            <text x="529" y="210" text-anchor="middle">色域内色板</text>
+            <path class="edge draw" data-from="check" data-to="ansi" style="--i:4.5" d="M 272,236 H 124 V 286" marker-end="url(#fig-palette-arr)"/>
+            <text x="196" y="228" text-anchor="middle">达标色板</text>
+            <path class="edge draw" data-from="check" data-to="png" style="--i:4.5" d="M 360,260 V 286" marker-end="url(#fig-palette-arr)"/>
+            <text x="372" y="276">逐色渲染</text>
+            <path class="edge draw" data-from="check" data-to="json" style="--i:4.5" d="M 448,236 H 596 V 286" marker-end="url(#fig-palette-arr)"/>
+            <text x="608" y="268">数值</text>
+          </g>
+          <g class="node" data-node="args" data-depth="0" style="--i:0" aria-label="参数解析"><rect x="28" y="36" width="168" height="52" rx="6"/><text x="112" y="58" text-anchor="middle">参数解析</text><text class="sub" x="112" y="78" text-anchor="middle">clap · 输出开关</text></g>
+          <g class="node" data-node="parse" data-depth="1" style="--i:1" aria-label="色值解析"><rect x="28" y="132" width="168" height="52" rx="6"/><text x="112" y="154" text-anchor="middle">色值解析</text><text class="sub" x="112" y="174" text-anchor="middle">CSS 子集 → sRGBA</text></g>
+          <g class="node" data-node="gen" data-depth="2" style="--i:2" aria-label="调色板生成"><rect x="276" y="132" width="168" height="52" rx="6"/><text x="360" y="154" text-anchor="middle">调色板生成</text><text class="sub" x="360" y="174" text-anchor="middle">OKLCH · 黄金角</text></g>
+          <g class="node" data-node="map" data-depth="3" style="--i:3" aria-label="色域映射"><rect x="524" y="132" width="168" height="52" rx="6"/><text x="608" y="154" text-anchor="middle">色域映射</text><text class="sub" x="608" y="174" text-anchor="middle">二分降 chroma</text></g>
+          <g class="node" data-node="check" data-depth="4" style="--i:4" aria-label="对比度校验"><rect x="276" y="204" width="168" height="52" rx="6"/><text x="360" y="226" text-anchor="middle">对比度校验</text><text class="sub" x="360" y="246" text-anchor="middle">WCAG AA / AAA</text></g>
+          <g class="node" data-node="ansi" data-depth="5" style="--i:5" aria-label="文本与 ANSI"><rect x="40" y="292" width="168" height="52" rx="6"/><text x="124" y="314" text-anchor="middle">文本与 ANSI</text><text class="sub" x="124" y="334" text-anchor="middle">TrueColor / 256</text></g>
+          <g class="node" data-node="png" data-depth="5" style="--i:5" aria-label="PNG 色卡"><rect x="276" y="292" width="168" height="52" rx="6"/><text x="360" y="314" text-anchor="middle">PNG 色卡</text><text class="sub" x="360" y="334" text-anchor="middle">棋盘格衬底 · ≤256 色</text></g>
+          <g class="node external" data-node="json" data-depth="5" style="--i:5" aria-label="JSON 输出"><rect x="512" y="292" width="168" height="52" rx="6"/><text x="596" y="314" text-anchor="middle">JSON 输出</text><text class="sub" x="596" y="334" text-anchor="middle">stdout 纯净</text></g>
+          <!-- 端到端不可见轨道：粒子沿它跑，几何检查不看它（stroke:none） -->
+          <g class="flow-guides">
+            <path data-flow fill="none" stroke="none" d="M 112,62 V 158 H 608 V 230 H 360 V 318"/>
+            <path data-flow fill="none" stroke="none" d="M 360,230 H 124 V 318"/>
+            <path data-flow fill="none" stroke="none" d="M 360,230 H 596 V 318"/>
+          </g>
+        </svg>
+        </div>
+        <figcaption>颜色核心产出唯一一份色板，入口与渲染层都不改它的值。</figcaption>
+        <div class="legend">
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><line x1="1" y1="6" x2="35" y2="6"/></svg>数据流向</span>
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><rect class="lg-bound" x="1" y="2" width="34" height="8" rx="2"/></svg>责任泳道</span>
+          <span><svg viewBox="0 0 36 12" width="36" height="12" aria-hidden="true" focusable="false"><circle class="lg-dot" cx="6" cy="6" r="3"/><circle class="lg-dot" cx="18" cy="6" r="3"/><circle class="lg-dot" cx="30" cy="6" r="3"/></svg>流动的数据</span>
+        </div>
+      </figure>
+      <p class="explain"><strong>三条泳道就是三个负责方。</strong>入口只解析参数、判定输出开关，不碰颜色；中间一条是颜色核心，四个节点串成主线——字符串进来，一份已在 sRGB 色域内的色板出去；最下一条是输出渲染，三个节点各自只做翻译，不再改值。</p>
+      <p class="explain"><strong>走一遍粒子主线：</strong>参数解析把色值字符串交给色值解析 → 得到规范 Color → 调色板生成在 OKLCH 上铺开 → 色域映射逐个收敛 → 对比度校验放行或修复 → 同一份色板同时可供终端色块、PNG 与 JSON 三个出口。三个出口的粒子跑的是同一个周期，只是相位不同。</p>
+      <p class="explain"><strong>易混点：</strong>色域映射在对比度校验之前，顺序不能换——先修对比度再映射色域，可能把刚修好的比值又破坏掉。JSON 节点画成外部样式，是因为它面向的是机器消费方而不是人眼。按预算删掉的是 CSS 变量前缀输出与 <code>--dry-run</code> 分支，它们都是渲染层的变体，不改变主线。</p>
+    </section>
+
+    <section id="install">
+      <h2>07 · 首次运行时序：npm 包为什么能覆盖三个平台</h2>
+      <p>npm 上发布的不是二进制，而是完整 Rust 源码。启动器在每次被调用时，按"版本 + 平台 + 架构"在用户缓存目录里找可执行文件：找不到就让 Cargo 编译一次，找得到就直接复用。这是<strong>首次运行慢、之后零开销</strong>的来源。</p>
+
+      <!-- 图计划: 时序图（生命线） · 无模式 · 命题句「启动器只保证有一个可用的可执行文件，编译只发生一次」· 5参与者/7消息 · 预算删掉了 Cargo 工具链缺失的报错分支与版本升级后的缓存失效 · A层动效: 逐步点亮；交互: 单步 hover / click / 键盘 -->
+      <figure class="plate seq zoomable" id="install-fig" data-hint="install-hint">
+        <div class="scroll">
+        <svg id="fig-install" viewBox="0 0 720 470" role="group" aria-labelledby="fig-install-title fig-install-desc" style="min-width:720px">
+          <title id="fig-install-title">npm 首次运行到拿到结果的时序</title>
+          <desc id="fig-install-desc">调用方执行 chromap，npm 启动器先查用户缓存里的可执行文件，未命中就现场编译并写回缓存，命中则直接读出，最后以子进程方式透传参数并分流输出。</desc>
+          <defs>
+            <marker id="fig-install-arr" class="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="fig-install-arr-lit" class="arr lit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+          <!-- 绘制顺序：生命线 → 激活条 → 片段框 → 消息与标签 → 不透明参与者 -->
+          <g class="lifelines">
+            <line class="lifeline" x1="70" y1="54" x2="70" y2="454"/>
+            <line class="lifeline" x1="215" y1="54" x2="215" y2="454"/>
+            <line class="lifeline" x1="360" y1="54" x2="360" y2="454"/>
+            <line class="lifeline" x1="505" y1="54" x2="505" y2="454"/>
+            <line class="lifeline" x1="650" y1="54" x2="650" y2="454"/>
+          </g>
+          <g class="acts">
+            <rect class="act" x="210" y="96" width="10" height="340"/>
+            <rect class="act" x="355" y="146" width="10" height="206"/>
+            <rect class="act" x="500" y="392" width="10" height="44"/>
+            <rect class="act" x="645" y="424" width="10" height="20"/>
+          </g>
+          <g class="frag-group">
+            <rect class="frag" x="166" y="172" width="444" height="196"/>
+            <rect class="frag-tab" x="166" y="172" width="40" height="20"/>
+            <text class="sub" x="186" y="186" text-anchor="middle">ALT</text>
+            <line class="frag-div" x1="166" y1="298" x2="610" y2="298"/>
+            <text x="216" y="212">[首次运行 · 缓存未命中]</text>
+            <text x="216" y="324">[后续运行 · 缓存命中]</text>
+          </g>
+          <g class="step" tabindex="0" aria-label="调用方要求执行 chromap 并带上全部参数"><path class="edge" d="M 70,100 H 206" marker-end="url(#fig-install-arr)"/><rect class="label" x="79" y="89" width="118" height="22" rx="4"/><text x="138" y="105" text-anchor="middle">① 执行 chromap</text></g>
+          <g class="step" tabindex="0" aria-label="启动器按版本加平台加架构去用户缓存里查可执行文件"><path class="edge" d="M 220,150 H 347" marker-end="url(#fig-install-arr)"/><rect class="label" x="238" y="139" width="92" height="22" rx="4"/><text x="284" y="155" text-anchor="middle">② 查缓存产物</text></g>
+          <g class="step" tabindex="0" aria-label="未命中时启动器让 Cargo 把源码编译进缓存"><path class="edge" d="M 220,234 H 347" marker-end="url(#fig-install-arr)"/><rect class="label" x="233" y="223" width="100" height="22" rx="4"/><text x="283" y="239" text-anchor="middle">③ cargo 编译</text></g>
+          <g class="step" tabindex="0" aria-label="缓存把可执行文件的位置交还启动器"><path class="edge ret" d="M 355,272 H 224" marker-end="url(#fig-install-arr)"/><rect class="label" x="238" y="261" width="104" height="22" rx="4"/><text x="290" y="277" text-anchor="middle">④ 返回产物路径</text></g>
+          <g class="step" tabindex="0" aria-label="命中时启动器直接读出既有产物不再编译"><path class="edge" d="M 220,348 H 347" marker-end="url(#fig-install-arr)"/><rect class="label" x="240" y="337" width="88" height="22" rx="4"/><text x="284" y="353" text-anchor="middle">⑤ 读出产物</text></g>
+          <g class="step" tabindex="0" aria-label="启动器以子进程方式运行可执行文件并透传参数"><path class="edge" d="M 220,396 H 496" marker-end="url(#fig-install-arr)"/><rect class="label" x="292" y="385" width="132" height="22" rx="4"/><text x="358" y="401" text-anchor="middle">⑥ spawnSync 透传</text></g>
+          <g class="step" tabindex="0" aria-label="可执行文件把结果写进标准输出，把诊断写进标准错误"><path class="edge" d="M 510,428 H 641" marker-end="url(#fig-install-arr)"/><rect class="label" x="514" y="417" width="96" height="22" rx="4"/><text x="562" y="433" text-anchor="middle">⑦ 结果/诊断</text></g>
+          <g class="actor"><rect x="10" y="10" width="120" height="44" rx="6"/><text x="70" y="38" text-anchor="middle">调用方</text></g>
+          <g class="actor"><rect x="155" y="10" width="120" height="44" rx="6"/><text x="215" y="38" text-anchor="middle">npm 启动器</text></g>
+          <g class="actor"><rect x="300" y="10" width="120" height="44" rx="6"/><text x="360" y="38" text-anchor="middle">Cargo 构建缓存</text></g>
+          <g class="actor"><rect x="445" y="10" width="120" height="44" rx="6"/><text x="505" y="38" text-anchor="middle">chromap CLI</text></g>
+          <g class="actor"><rect x="590" y="10" width="120" height="44" rx="6"/><text x="650" y="38" text-anchor="middle">stdout/stderr</text></g>
+        </svg>
+        </div>
+        <figcaption>启动器只保证有一个可用的可执行文件，编译只发生一次。
+          <div class="figure-controls"><button class="replay" type="button">▶ 重放动效</button><p class="step-hint" id="install-hint" role="status" aria-live="polite" aria-atomic="true">共 7 步</p></div>
+        </figcaption>
+      </figure>
+      <p class="explain"><strong>五条生命线，一条主动。</strong>调用方只发一条消息就等结果；npm 启动器从第一步活到最后一步，它的激活条贯穿全图；Cargo 构建缓存只在 ALT 框里被访问，两个分支必落其一；chromap CLI 直到第六步才登场，它对前面发生过什么一无所知；stdout/stderr 只收最后一条消息。</p>
+      <p class="explain"><strong>易混点：</strong>ALT 框里的两条分支是二选一，不是先后执行；③ 与 ⑤ 的箭头方向相同，区别在写缓存还是读缓存。④ 是返回消息，用更细的线画。第七步说的"分流"是同一进程里的两个通道——结果进 stdout、诊断进 stderr，这样 <code>--json</code> 的输出可以直接进管道。按预算删掉的是 Cargo 工具链缺失时的报错分支与版本升级后的缓存失效重建。</p>
+    </section>
+
+    <section id="tradeoffs">
+      <h2>08 · 五个已经做出的取舍</h2>
+      <div class="table-scroll" tabindex="0" aria-label="可横向滚动的取舍表">
+        <table>
+          <thead><tr><th>取舍</th><th>换来什么</th><th>代价</th></tr></thead>
+          <tbody>
+            <tr><td>只存规范化的伽马 sRGBA</td><td>库内只有一种真值，换算方向永远可逆</td><td>每次感知运算都要重算一次空间矩阵</td></tr>
+            <tr><td>感知运算放在 OKLab/OKLCH 上</td><td>混色不发灰、明度标尺符合直觉</td><td>色差不是 CIEDE2000，数值不能当行业标准用</td></tr>
+            <tr><td>CMYK 不带配置文件</td><td>零依赖、零配置，纯数学可复现</td><td>只能当近似，不能直接付印</td></tr>
+            <tr><td>npm 发源码而不是预编译产物</td><td>一个包覆盖三平台，无需发布矩阵</td><td>首次运行要等一次本地编译</td></tr>
+            <tr><td>stdout 只放结果，诊断走 stderr</td><td><code>--json</code> 可直接进管道与 jq</td><td>PNG 写盘提示在 stderr，人眼有时会错过</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details class="technical-note">
+        <summary>展开：透明色为什么测不了对比度</summary>
+        <p>WCAG 的比值公式只对不透明颜色有定义。带 alpha 的前景必须先压在一块画布上合成出不透明结果，才能参与比较；所以库里带 alpha 的对比度入口要求显式给出一块底色，而不是悄悄假设白色。终端色块对透明色也是同一招：分别压在深、浅两块底色上各画一格。</p>
+      </details>
+      <details class="technical-note">
+        <summary>展开：色域映射为什么用二分而不是公式</summary>
+        <p>收敛只动 chroma、不动明度与色相，在这个约束下"色域内最大 chroma"是一个单调的边界，二分 32 次就能稳定逼近。它比解析式映射更容易保住"越界越少、改动越小"的性质，代价是每次映射要做数十次空间换算。</p>
+      </details>
+    </section>
+
+    <footer class="footnotes" aria-label="脚注">
+      <p>本页由 code2arch 从仓库代码快照生成：每一条结论都在库源码、命令行源码、npm 启动器与 CI 配置里找到至少两处印证，本页没有需要挂【推断】或 TBD 标记的空缺。</p>
+      <p>边界陈述（CMYK 近似、色差口径、透明色与对比度、PNG 上限）与 README 的边界清单一致，不在此重复。</p>
+      <p>再生成方式：把代码快照更新到最新提交后重跑 code2arch，图与正文一起更新。</p>
+    </footer></div>
+  </div></main>
+  <script data-doc-motion-runtime>
+/* 固定动效运行时 · templates/motion-runtime.js
+ * 契约：references/motion-contract.md。整个文件原样嵌入页面末尾的
+ * data-doc-motion-runtime 脚本块；审计按 SHA-256 核对，任何改动只能
+ * 落在本文件，页面级扩展写进 script[data-doc-motion-extension] 块并走例外条款。
+ * 依赖 <head> 首个脚本已声明 window.__docErrors / window.__docReady=false。
+ * 约束：vanilla ES2020；不用定时循环、不克隆节点、不注入标记文本、不发网络请求。 */
+(() => {
+  'use strict';
+  const doc = document, root = doc.documentElement;
+  const params = new URLSearchParams(location.search);
+  const wanted = params.get('motion');
+  const MODE = wanted === 'static' ? 'static' : wanted === 'flow' ? 'flow' : 'auto';
+  root.dataset.motion = MODE;
+  const STATIC = MODE === 'static';
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const AUTOPLAY = !STATIC && !REDUCED;             // 进场 / 逐步点亮是否自动播放
+  const PARTICLES = !STATIC && (MODE === 'flow' || !REDUCED);   // ?motion=flow 强制粒子
+  const FLOW_MS = 3200;                              // 全图同周期，只错相位（唯一字面量）
+  const $ = (sel, el = doc) => [...el.querySelectorAll(sel)];
+  const errors = window.__docErrors || (window.__docErrors = []);
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  let ok = false;
+
+  try {
+    /* ---- 逐步点亮：render 只画状态，seek 先停表再画，play 走 tick 链 ---- */
+    const timers = new WeakMap();                    // 每图一个待执行计时器
+    const seqs = $('figure.seq');
+    const stepsOf = fig => $('.step', fig);
+    const say = (fig, text) => {
+      const hint = fig.dataset.hint ? doc.getElementById(fig.dataset.hint) : null;
+      if (hint) hint.textContent = text;
+    };
+    const label = (fig, k) => {
+      const steps = stepsOf(fig), N = steps.length;
+      if (k <= 0) return `共 ${N} 步`;
+      if (k >= N) return `全部 ${N} 步`;
+      return `第 ${k} / ${N} 步：${(steps[k - 1].getAttribute('aria-label') || '').trim()}`;
+    };
+    const dwell = step => {
+      const chars = (step.getAttribute('aria-label') || '').replace(/\s/g, '').length;
+      return Math.max(550, Math.min(1500, 550 + chars * 70));
+    };
+    const stop = fig => { clearTimeout(timers.get(fig)); timers.delete(fig); };
+    const render = (fig, n) => {
+      const steps = stepsOf(fig), N = steps.length, k = Math.max(0, Math.min(Number(n) || 0, N));
+      steps.forEach((s, i) => {
+        s.classList.toggle('done', k >= N || i < k - 1);
+        s.classList.toggle('cur', k < N && i === k - 1);
+      });
+      fig.classList.toggle('ended', k >= N);
+      fig.dataset.n = String(k);
+      fig.dataset.frame = STATIC ? 'static' : k <= 0 ? 'start' : k >= N ? 'end' : 'step';
+      return k;
+    };
+    const seek = (fig, n, user) => {                 // user=true：读者动作，写提示行
+      stop(fig);
+      const k = render(fig, n);
+      if (user) say(fig, label(fig, k));
+      return k;
+    };
+    const finishSeq = fig => { const k = seek(fig, stepsOf(fig).length); say(fig, label(fig, k)); };
+    const play = fig => {
+      stop(fig);
+      const steps = stepsOf(fig);
+      if (!steps.length) return;
+      render(fig, 0);
+      const tick = () => {
+        timers.delete(fig);
+        if (doc.visibilityState === 'hidden') return;          // 标签页隐藏即停，不追帧
+        const k = render(fig, Number(fig.dataset.n) + 1);
+        if (k >= steps.length) { say(fig, label(fig, k)); return; }
+        timers.set(fig, setTimeout(tick, dwell(steps[k - 1])));
+      };
+      timers.set(fig, setTimeout(tick, 340));                   // 首拍 = 进场跨度 240 + 100
+    };
+    seqs.forEach(fig => {
+      if (!fig.hasAttribute('tabindex')) fig.setAttribute('tabindex', '0');
+      if (!fig.hasAttribute('role')) fig.setAttribute('role', 'group');
+      const steps = stepsOf(fig);
+      steps.forEach((s, i) => {
+        ['mouseenter', 'focus'].forEach(ev => s.addEventListener(ev, () => s.classList.add('focus')));
+        ['mouseleave', 'blur'].forEach(ev => s.addEventListener(ev, () => s.classList.remove('focus')));
+        s.addEventListener('click', () => seek(fig, i + 1, true));
+      });
+      fig.addEventListener('keydown', e => {
+        const n = Number(fig.dataset.n) || 0;
+        const map = { ArrowRight: n + 1, ArrowLeft: n - 1, Home: 0, End: steps.length };
+        if (!Object.prototype.hasOwnProperty.call(map, e.key)) return;
+        e.preventDefault();
+        seek(fig, map[e.key], true);
+      });
+      const replay = fig.querySelector('.replay');
+      if (replay) replay.addEventListener('click', () => {
+        if (AUTOPLAY) { play(fig); return; }
+        seek(fig, 0, true);
+        say(fig, `系统已减少动效：用 ← / → 逐步查看（共 ${steps.length} 步）`);
+      });
+      if (AUTOPLAY) render(fig, 0);
+      else {
+        finishSeq(fig);
+        if (REDUCED && !STATIC) say(fig, `${label(fig, steps.length)} · 系统已减少动效，用 ← / → 逐步查看`);
+      }
+    });
+
+    /* ---- 边 draw-in：起笔前藏箭头并把 dash 设成路径全长，画完复位 inline dash ---- */
+    const anims = $('figure.anim');
+    const drawEdges = fig => $('path.edge.draw', fig);
+    const drawers = new WeakMap();
+    const finishEdge = p => {
+      p.classList.add('drawn');
+      if (p.dataset.marker && !p.getAttribute('marker-end')) p.setAttribute('marker-end', p.dataset.marker);
+      p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; p.style.transition = '';
+    };
+    const armEdge = p => {
+      const marker = p.getAttribute('marker-end');
+      if (marker && !p.dataset.marker) p.dataset.marker = marker;
+      p.removeAttribute('marker-end');                          // 箭头延迟落地
+      const len = p.getTotalLength();
+      p.style.transition = 'none';                              // 设初值时不触发过渡
+      p.style.strokeDasharray = String(len); p.style.strokeDashoffset = String(len);
+      void p.getBoundingClientRect();
+      p.style.transition = '';
+      let done = false;
+      const finish = () => { if (!done) { done = true; finishEdge(p); } };
+      p.addEventListener('transitionend', e => { if (e.propertyName === 'stroke-dashoffset') finish(); });
+      drawers.set(p, () => requestAnimationFrame(() => {
+        const cs = getComputedStyle(p);
+        const total = (parseFloat(cs.transitionDelay) || 0) + (parseFloat(cs.transitionDuration) || 0);
+        p.style.strokeDashoffset = '0';
+        setTimeout(finish, total * 1000 + 250);                 // transitionend 未触发时的收尾
+      }));
+    };
+    const reveal = fig => { fig.classList.add('in-view'); drawEdges(fig).forEach(p => { const go = drawers.get(p); if (go) go(); }); };
+    const settle = fig => { fig.classList.add('in-view'); drawEdges(fig).forEach(finishEdge); if (STATIC) fig.dataset.frame = 'static'; };
+
+    /* ---- 进场触发（一次）：IntersectionObserver，触发后 unobserve ---- */
+    if (AUTOPLAY) {
+      anims.forEach(fig => drawEdges(fig).forEach(armEdge));
+      const io = new IntersectionObserver(entries => entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        io.unobserve(entry.target);
+        if (entry.target.matches('figure.anim')) reveal(entry.target);
+        if (entry.target.matches('figure.seq')) play(entry.target);
+      }), { rootMargin: '0px 0px -15% 0px' });
+      anims.forEach(fig => io.observe(fig));
+      seqs.forEach(fig => io.observe(fig));
+    } else {
+      anims.forEach(settle);
+    }
+
+    /* ---- 焦点降噪：压暗其余（.dim），不是只加亮邻居 ---- */
+    anims.forEach(fig => {
+      const nodes = $('[data-node]', fig);
+      if (nodes.length < 2) return;
+      const edges = $('[data-from][data-to]', fig);
+      const set = (id, on) => {
+        fig.classList.toggle('hl', on);
+        const near = new Set([id]);
+        edges.forEach(e => { if (e.dataset.from === id) near.add(e.dataset.to); if (e.dataset.to === id) near.add(e.dataset.from); });
+        nodes.forEach(n => n.classList.toggle('dim', on && !near.has(n.dataset.node)));
+        edges.forEach(e => {
+          const hit = on && (e.dataset.from === id || e.dataset.to === id);
+          e.classList.toggle('hl', hit); e.classList.toggle('dim', on && !hit);
+        });
+      };
+      nodes.forEach(n => {
+        if (!n.hasAttribute('tabindex')) n.setAttribute('tabindex', '0');
+        ['mouseenter', 'focus'].forEach(ev => n.addEventListener(ev, () => set(n.dataset.node, true)));
+        ['mouseleave', 'blur'].forEach(ev => n.addEventListener(ev, () => set(n.dataset.node, false)));
+      });
+    });
+
+    /* ---- 图文联动：click / Enter 滚到讲它的段落并高亮 1.2s ---- */
+    $('[data-explains]').forEach(n => {
+      if (!n.hasAttribute('tabindex')) n.setAttribute('tabindex', '0');
+      const go = () => {
+        const target = doc.getElementById(n.dataset.explains);
+        if (!target) return;
+        target.scrollIntoView({ behavior: AUTOPLAY ? 'smooth' : 'auto', block: 'center' });
+        target.classList.add('flash');
+        setTimeout(() => target.classList.remove('flash'), 1200);
+      };
+      n.addEventListener('click', go);
+      n.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+    });
+
+    /* ---- 谱系聚焦：图例按钮 hover / focus 临时、click 固定、Escape 恢复 ---- */
+    $('figure').filter(fig => fig.querySelector('[data-lineage-focus]')).forEach(fig => {
+      const keys = $('[data-lineage-focus]', fig);
+      let pinned = '';
+      const show = id => {
+        $('[data-lineage]', fig).forEach(el => {          // 每次重查，让后生成的粒子也参与
+          el.classList.toggle('is-active', Boolean(id) && el.dataset.lineage === id);
+          el.classList.toggle('dim', Boolean(id) && el.dataset.lineage !== id);
+        });
+        keys.forEach(k => k.setAttribute('aria-pressed', String(Boolean(pinned) && k.dataset.lineageFocus === pinned)));
+      };
+      keys.forEach(k => {
+        const id = k.dataset.lineageFocus;
+        ['mouseenter', 'focus'].forEach(ev => k.addEventListener(ev, () => { if (!pinned) show(id); }));
+        ['mouseleave', 'blur'].forEach(ev => k.addEventListener(ev, () => { if (!pinned) show(''); }));
+        k.addEventListener('click', () => { pinned = pinned === id ? '' : id; show(pinned); });
+      });
+      fig.addEventListener('keydown', e => { if (e.key === 'Escape') { pinned = ''; show(''); } });
+    });
+
+    /* ---- 流粒子：沿 [data-flow] 轨道循环，全图同周期只错相位；粒子 aria-hidden ---- */
+    const flowState = [];
+    if (PARTICLES) {
+      const groups = new Map();
+      $('[data-flow]').filter(p => p.dataset.flowAuto !== 'false' && typeof p.getTotalLength === 'function').forEach(p => {
+        const key = p.closest('figure') || p.ownerSVGElement;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(p);
+      });
+      const dots = [];
+      groups.forEach((paths, key) => paths.forEach((p, i) => {
+        const dot = doc.createElementNS(SVG_NS, 'circle');
+        dot.setAttribute('r', '3.5'); dot.setAttribute('class', 'flow-dot'); dot.setAttribute('aria-hidden', 'true');
+        if (p.dataset.lineage) dot.dataset.lineage = p.dataset.lineage;
+        if (p.dataset.flowColor) dot.style.fill = p.dataset.flowColor;
+        p.parentNode.appendChild(dot);
+        const phase = (i * FLOW_MS) / paths.length;
+        dots.push({ p, dot, len: p.getTotalLength(), phase });
+        flowState.push({ fig: key && key.id ? key.id : '', dur: FLOW_MS, phase });
+      }));
+      if (dots.length) {
+        const t0 = performance.now();
+        const frame = t => {
+          dots.forEach(d => {
+            const pt = d.p.getPointAtLength((((t - t0 + d.phase) % FLOW_MS) / FLOW_MS) * d.len);
+            d.dot.setAttribute('cx', pt.x.toFixed(2)); d.dot.setAttribute('cy', pt.y.toFixed(2));
+          });
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }
+    }
+
+    /* ---- 插图查看器：原生 <dialog>，移动 SVG 节点而不克隆，关闭时归还 ---- */
+    const el = (tag, attrs, ...kids) => {
+      const node = doc.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+      node.append(...kids);
+      return node;
+    };
+    let dialog = doc.querySelector('dialog.figure-lightbox');
+    if (!dialog) {
+      dialog = el('dialog', { class: 'figure-lightbox', 'aria-label': '插图查看器' },
+        el('div', { class: 'zoom-shell' },
+          el('div', { class: 'zoom-toolbar' },
+            el('span', { class: 'zoom-caption' }),
+            el('div', { class: 'zoom-controls', 'aria-label': '缩放控制' },
+              el('button', { type: 'button', 'data-zoom-out': '', 'aria-label': '缩小' }, '−'),
+              el('button', { type: 'button', 'data-zoom-fit': '', 'aria-label': '适合窗口' }, '适配'),
+              el('button', { type: 'button', 'data-zoom-actual': '', 'aria-label': '恢复百分之百' }, '100%'),
+              el('button', { type: 'button', 'data-zoom-in': '', 'aria-label': '放大' }, '＋'),
+              el('button', { type: 'button', class: 'zoom-close', 'data-zoom-close': '', 'aria-label': '关闭' }, '×'))),
+          el('div', { class: 'zoom-viewport', tabindex: '0', 'aria-label': '可滚动的放大插图' },
+            el('div', { class: 'zoom-stage' }))));
+      doc.body.append(dialog);
+    }
+    const viewport = dialog.querySelector('.zoom-viewport');
+    const stage = dialog.querySelector('.zoom-stage');
+    const caption = dialog.querySelector('.zoom-caption');
+    const captionOf = figure => {
+      const cap = figure.querySelector('figcaption');
+      if (!cap) return '插图';
+      return [...cap.childNodes]
+        .filter(n => !(n.nodeType === 1 && n.matches('.figure-controls, .replay, .step-hint')))
+        .map(n => n.textContent).join('').trim() || '插图';
+    };
+    let active = null, placeholder = null, previousFocus = null, originalStyle = null;
+    let baseWidth = 0, baseHeight = 0, scale = 1;
+    const clamp = value => Math.min(4, Math.max(.25, value));
+    const zoomTo = value => {
+      if (!active) return;
+      scale = clamp(value);
+      const width = baseWidth * scale, height = baseHeight * scale;
+      active.style.width = `${width}px`; active.style.height = `${height}px`;
+      stage.style.width = `${Math.max(viewport.clientWidth, width + 48)}px`;
+      stage.style.height = `${Math.max(viewport.clientHeight, height + 48)}px`;
+      dialog.dataset.scale = scale.toFixed(3);
+    };
+    const fit = () => zoomTo(Math.min((viewport.clientWidth - 48) / baseWidth, (viewport.clientHeight - 48) / baseHeight));
+    const close = () => {
+      if (!active) return;
+      placeholder.replaceWith(active);
+      if (originalStyle === null) active.removeAttribute('style'); else active.setAttribute('style', originalStyle);
+      active = null; placeholder = null; doc.body.classList.remove('figure-zoom-open');
+      if (dialog.open) dialog.close();
+      if (previousFocus) previousFocus.focus();
+    };
+    const open = figure => {
+      const media = figure && figure.querySelector('svg, img');
+      if (!media) return false;
+      if (active) close();
+      previousFocus = doc.activeElement;
+      const box = media.getBoundingClientRect();
+      const viewBox = media.tagName.toLowerCase() === 'svg' ? media.viewBox.baseVal : null;
+      baseWidth = (viewBox && viewBox.width) || media.naturalWidth || box.width;
+      baseHeight = (viewBox && viewBox.height) || media.naturalHeight || box.height;
+      originalStyle = media.getAttribute('style');
+      placeholder = el('div', { class: 'zoom-placeholder', 'aria-hidden': 'true' });
+      placeholder.style.height = `${box.height}px`;
+      media.replaceWith(placeholder); active = media; stage.append(media);
+      caption.textContent = captionOf(figure);
+      doc.body.classList.add('figure-zoom-open');
+      dialog.showModal();
+      requestAnimationFrame(() => { fit(); viewport.scrollTo(0, 0); viewport.focus(); });
+      return true;
+    };
+    const zoomables = $('figure').filter(figure => figure.querySelector('svg') && !dialog.contains(figure));
+    zoomables.forEach((figure, index) => {
+      figure.classList.add('zoomable');
+      const button = el('button', { type: 'button', class: 'figure-zoom-trigger', 'aria-label': `放大查看图 ${index + 1}`, title: `放大查看图 ${index + 1}` });
+      button.addEventListener('click', () => open(figure));
+      figure.append(button);
+    });
+    dialog.querySelector('[data-zoom-out]').addEventListener('click', () => zoomTo(scale / 1.25));
+    dialog.querySelector('[data-zoom-in]').addEventListener('click', () => zoomTo(scale * 1.25));
+    dialog.querySelector('[data-zoom-actual]').addEventListener('click', () => zoomTo(1));
+    dialog.querySelector('[data-zoom-fit]').addEventListener('click', fit);
+    dialog.querySelector('[data-zoom-close]').addEventListener('click', close);
+    dialog.addEventListener('cancel', e => { e.preventDefault(); close(); });
+    dialog.addEventListener('click', e => { if (e.target === dialog) close(); });
+    viewport.addEventListener('wheel', e => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault(); zoomTo(scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15));
+    }, { passive: false });
+    doc.addEventListener('keydown', e => {
+      if (!dialog.open) return;
+      if (e.key === '+' || e.key === '=') zoomTo(scale * 1.25);
+      else if (e.key === '-') zoomTo(scale / 1.25);
+      else if (e.key === '0') zoomTo(1);
+      else if (e.key.toLowerCase() === 'f') fit();
+    });
+    window.addEventListener('resize', () => { if (dialog.open) fit(); });
+    window.__figureZoom = {
+      open: index => open(zoomables[index]), close, fit, actual: () => zoomTo(1), scale: zoomTo,
+      state: () => ({ open: dialog.open, scale, hasFigure: Boolean(active) }),
+    };
+
+    /* ---- 打印、页面隐藏与取证探针（不产生 UI） ---- */
+    window.addEventListener('beforeprint', () => { anims.forEach(settle); seqs.forEach(finishSeq); });
+    doc.addEventListener('visibilitychange', () => { if (doc.visibilityState === 'hidden') seqs.forEach(stop); });
+    window.__seqSeek = (id, n) => {
+      const fig = doc.getElementById(String(id));
+      return fig && fig.matches('figure.seq') ? seek(fig, Number(n), true) : -1;
+    };
+    window.__flowState = () => flowState.map(s => ({ fig: s.fig, dur: s.dur, phase: s.phase }));
+    ok = true;
+  } catch (error) {
+    errors.push(`motion-runtime: ${String(error && error.stack || error)}`);
+  }
+
+  /* 失效安全：只有全部绑定成功才允许 CSS 隐藏初态；失败时完整静态源保持可见。 */
+  if (ok) {
+    root.classList.add('motion-ready');
+    window.__docReady = true;
+  }
+})();
+
+</script>
+</body>
+</html>
