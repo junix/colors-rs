@@ -1,0 +1,46 @@
+{
+  "red_green": {
+    "argv": [
+      "chromap",
+      "--json",
+      "distance",
+      "#ff0000",
+      "#00ff00"
+    ],
+    "oklab": 0.5198128892674524,
+    "srgb": 1.4142135623730951
+  },
+  "black_white": {
+    "argv": [
+      "chromap",
+      "--json",
+      "distance",
+      "#000000",
+      "#ffffff"
+    ],
+    "oklab": 0.9999999934735468,
+    "srgb": 1.7320508075688772
+  },
+  "complementary_pair": {
+    "argv": [
+      "chromap",
+      "--json",
+      "distance",
+      "#663399",
+      "#475c00"
+    ],
+    "oklab": 0.2693027608377426,
+    "srgb": 0.6329538108902514
+  },
+  "purple_vs_repaired": {
+    "argv": [
+      "chromap",
+      "--json",
+      "distance",
+      "#475c00",
+      "#adc777"
+    ],
+    "oklab": 0.35043995169988945,
+    "srgb": 0.7442099971110822
+  }
+}

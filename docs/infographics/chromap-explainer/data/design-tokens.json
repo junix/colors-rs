@@ -1,0 +1,106 @@
+{
+  "argv": [
+    "chromap",
+    "--json",
+    "palette",
+    "#4f7cff",
+    "-k",
+    "neighbors",
+    "-c",
+    "9",
+    "--lightness-span",
+    "0.64",
+    "--css-prefix",
+    "brand"
+  ],
+  "scale_hex": [
+    "#0a0692",
+    "#142dac",
+    "#2648c7",
+    "#3a62e3",
+    "#4f7cff",
+    "#749bff",
+    "#99b7ff",
+    "#bfd2ff",
+    "#e5edff"
+  ],
+  "css": ":root {\n  --brand-1: #0a0692;\n  --brand-2: #142dac;\n  --brand-3: #2648c7;\n  --brand-4: #3a62e3;\n  --brand-5: #4f7cff;\n  --brand-6: #749bff;\n  --brand-7: #99b7ff;\n  --brand-8: #bfd2ff;\n  --brand-9: #e5edff;\n}",
+  "example_source": "crates/chromap/examples/design_tokens.rs",
+  "example_output_hex": [
+    "#0a0692",
+    "#142dac",
+    "#2648c7",
+    "#3a62e3",
+    "#4f7cff",
+    "#749bff",
+    "#99b7ff",
+    "#bfd2ff",
+    "#e5edff"
+  ],
+  "cli_equals_example": true,
+  "contrast_on_white": {
+    "#0a0692": {
+      "aa_large": true,
+      "aa_normal": true,
+      "aaa_large": true,
+      "aaa_normal": true,
+      "ratio": 14.442713092419119
+    },
+    "#142dac": {
+      "aa_large": true,
+      "aa_normal": true,
+      "aaa_large": true,
+      "aaa_normal": true,
+      "ratio": 10.495746829656202
+    },
+    "#2648c7": {
+      "aa_large": true,
+      "aa_normal": true,
+      "aaa_large": true,
+      "aaa_normal": true,
+      "ratio": 7.409853889431863
+    },
+    "#3a62e3": {
+      "aa_large": true,
+      "aa_normal": true,
+      "aaa_large": true,
+      "aaa_normal": false,
+      "ratio": 5.202924752969411
+    },
+    "#4f7cff": {
+      "aa_large": true,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 3.710566241005667
+    },
+    "#749bff": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 2.666619708782266
+    },
+    "#99b7ff": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 1.9864062799529096
+    },
+    "#bfd2ff": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 1.5131960915230094
+    },
+    "#e5edff": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 1.1738875494275587
+    }
+  }
+}

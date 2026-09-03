@@ -1,0 +1,66 @@
+{
+  "ok_convert": {
+    "argv": [
+      "chromap",
+      "convert",
+      "#abc"
+    ],
+    "exit": 0,
+    "stderr_first_line": ""
+  },
+  "invalid_hex": {
+    "argv": [
+      "chromap",
+      "convert",
+      "#zzzzzz"
+    ],
+    "exit": 2,
+    "stderr_first_line": "error: invalid value '#zzzzzz' for '<COLOR>': invalid color syntax `#zzzzzz`: hex colors may contain only 0-9 and a-f"
+  },
+  "unknown_name": {
+    "argv": [
+      "chromap",
+      "convert",
+      "notacolor"
+    ],
+    "exit": 2,
+    "stderr_first_line": "error: invalid value 'notacolor' for '<COLOR>': unknown CSS color name `notacolor`"
+  },
+  "unreachable_contrast": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ensure",
+      "#333333",
+      "#555555",
+      "--minimum",
+      "21"
+    ],
+    "exit": 2,
+    "stderr_first_line": "error: contrast target 21:1 is unreachable; best available ratio is 7.455177810447525:1"
+  },
+  "alpha_needs_canvas": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#66339980",
+      "#ffffff"
+    ],
+    "exit": 2,
+    "stderr_first_line": "error: transparent colors require an explicit opaque canvas before contrast is measured"
+  },
+  "json_conflicts_plain": {
+    "argv": [
+      "chromap",
+      "--json",
+      "--plain",
+      "convert",
+      "#abc"
+    ],
+    "exit": 2,
+    "stderr_first_line": "error: the argument '--json' cannot be used with '--plain'"
+  }
+}

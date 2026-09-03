@@ -1,0 +1,112 @@
+# svg-linter gate — chromap-explainer — one file at a time
+# command: for f in svg/*.svg; do svg-linter --plain check "$f"; done
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-cli.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	partial			svg/text-text-overlap								54 of 1485 eligible targets skipped: unmeasurable_text=1
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-complement.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	not_applicable			svg/line-overlap								no eligible targets
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-contrast.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-distance.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-evidence.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-hero.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	not_applicable			svg/line-overlap								no eligible targets
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-kinds.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	not_applicable			svg/line-overlap								no eligible targets
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-luminance.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-parse.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-spaces.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0
+## /Users/junix/projects/colors/colors-rs/docs/infographics/chromap-explainer/svg/p-tokens.svg
+record_type	status	severity	confidence	rule	diagnostic_key	instance_hash	elements	x	y	width	height	message
+outcome	evaluated			svg/dangling-reference								
+outcome	evaluated			svg/duplicate-id								
+outcome	evaluated			svg/exact-duplicate-geometry								
+outcome	evaluated			svg/line-overlap								
+outcome	evaluated			svg/out-of-bounds								
+outcome	evaluated			svg/path-self-crossing								
+outcome	evaluated			svg/text-text-overlap								
+exit=0

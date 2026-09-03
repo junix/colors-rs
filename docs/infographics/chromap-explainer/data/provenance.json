@@ -1,0 +1,31 @@
+{
+  "generator": "prep_data.py (verbatim engine outputs; derivations self-checked against engine output before freezing)",
+  "engine_version": "chromap 0.1.0",
+  "engine_binary_sha256": "39baa731a44076456d43b82527fb15bdc49663390b7554bff7bed468cd658b3a",
+  "engine_commit": "f6a58fac2f5e22603105854c39fd41f577d6f13a",
+  "selfchecks": "21/21 passed (data/selfchecks.json)",
+  "commands": {
+    "inspect-rebeccapurple.json": "chromap --json inspect rebeccapurple",
+    "spaces-chain.json": "derived: spaces.rs formulas; self-checked against data/inspect-rebeccapurple.json",
+    "complementary.json": "chromap --json palette rebeccapurple -k complementary",
+    "ratio-complement.json": "chromap --json contrast ratio #663399 #475c00",
+    "ensure-complement.json": "chromap --json contrast ensure #475c00 #663399 --target aa",
+    "ensure-ffe066.json": "chromap --json contrast ensure #ffe066 #1a1a1a --target aa",
+    "blackwhite.json": "chromap --json contrast black-white #663399",
+    "contrast-ladder.json": "argv per entry inside the file",
+    "distance.json": "argv per entry inside the file",
+    "parse-forms.json": "chromap --json convert <sample> per row",
+    "palettes.json": "chromap --json palette #4f7cff -k <kind> × 14; +1 probe",
+    "formats.json": "chromap --format <f> --plain --color never convert rebeccapurple",
+    "design-tokens.json": "chromap --json palette #4f7cff -k neighbors -c 9 --lightness-span 0.64 --css-prefix brand ; cargo run --package chromap --example design_tokens",
+    "png-freeze.json": "two identical runs in a temp dir; sha256 recorded",
+    "tokyo-night.json": "color-palette-rs --json show tokyo-night ; chromap --json dominant --count 3 <hexes×7> ; chromap --json average <hexes>",
+    "exits.json": "probes listed inside the file",
+    "cli.json": "chromap --help / <sub> --help"
+  },
+  "notes": [
+    "All floats are frozen at engine full precision; panels render them verbatim without truncation.",
+    "spaces-chain.json linear/oklab values are recomputed from spaces.rs formulas and anchored to the engine's full-precision relative_luminance / oklab() string.",
+    "tokyo-night colors come from the color-palette-rs engine (--json show tokyo-night), used as dominant/average input."
+  ]
+}
