@@ -8,8 +8,8 @@ VERIFICATION.md 里找到可重跑的对拍命令。
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 长图页面（1200 CSS px 宽，8888 CSS px 高；零 JS / 零 CDN / 无外部请求） |
-| `chromap-explainer@2x.png` | 最终位图 2400×17776（= 1200×8888 × dpr 2，stitch 断言通过） |
+| `index.html` | 长图页面（1200 CSS px 宽，8943 CSS px 高；零 JS / 零 CDN / 无外部请求；不印代码坐标，声明以锚点编号 A-xx 引用 VERIFICATION §9.2） |
+| `chromap-explainer@2x.png` | 最终位图 2400×17886（= 1200×8943 × dpr 2，stitch 断言通过） |
 | `chromap-explainer-thumb.png` | 1/4 缩略图（层级节奏检查） |
 | `svg/` | 11 个面板的独立 SVG（svg-linter 门禁对象） |
 | `data/` | 20 个冻结证据 JSON + `provenance.json`（每条完整 argv） |
@@ -34,6 +34,9 @@ python3 prep_data.py                                # 可选：data/ 已随仓�
 
 # 2) 生成页面与 SVG（确定性：无时间戳 / 无绝对路径 / 无随机序）
 python3 build.py                                    # -> index.html + svg/*.svg
+#    build 末尾跑 code_detail_gate：12 产物 × 6 式清扫（file:line / 引擎文件名 /
+#    行区间 / 第N行 / rust 关键字 / 标识符调用串）必须零命中——代码细节下页
+#    政策见 VERIFICATION §9；引擎源码名清单冻结于 build.py 内。
 
 # 3) 结构门禁：一次一个文件，错误级 findings 必须为 0
 for f in svg/*.svg; do svg-linter --plain check "$f"; done

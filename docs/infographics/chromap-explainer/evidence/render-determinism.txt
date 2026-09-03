@@ -1,8 +1,9 @@
-# render determinism proof — chromap-explainer (rebuilt 2026-09-02 after anchor fixes)
+# render determinism proof — chromap-explainer (rebuilt 2026-09-03 after the
+# code-detail-off-page retrofit incl. f64→双精度 wording fix; page 8943 CSS px)
 # Real two-run comparison: run1 stitched, then the whole render/ dir moved aside and a
 # second independent browser session re-rendered from scratch; both full bitmaps and
 # every slice compared. (The old proof rendered run2 to /tmp but hashed render/ —
-# a no-op comparison; corrected this round, VERIFICATION §3.6 item 13.)
+# a no-op comparison; corrected earlier, VERIFICATION §3.6 item 13.)
 # commands:
 #   node shoot.js "file://$PWD/index.html" render && python3 stitch.py
 #   mv render render.run1
@@ -10,9 +11,9 @@
 #   shasum -a 256 render.run1/full@2x.png render/full@2x.png
 #   for f in render.run1/slice-*.png; do cmp "$f" "render/${f##*/}"; done   # all identical
 #   rm -rf render.run1
-page css: 1200x8888  dpr=2  slice=3600   (identical in both runs)
-bitmap: 2400x17776  (stitch.py asserted height == cssHeight x dpr in BOTH runs)
-run1 full@2x.png sha256: db4b6539c4cc973556de68091c24ee6ef02b4192d0a1a2e88c6a33503b31cc1a
-run2 full@2x.png sha256: db4b6539c4cc973556de68091c24ee6ef02b4192d0a1a2e88c6a33503b31cc1a
+page css: 1200x8943  dpr=2  slice=3600   (identical in both runs)
+bitmap: 2400x17886  (stitch.py asserted height == cssHeight x dpr in BOTH runs)
+run1 full@2x.png sha256: e156887abdde6da7ac2ed61a0fd1c5733a58781b9d5c654bafcc7bfcf7497fdf
+run2 full@2x.png sha256: e156887abdde6da7ac2ed61a0fd1c5733a58781b9d5c654bafcc7bfcf7497fdf
 slices: 3/3 byte-identical (cmp exit 0 for slice-00000/03600/07200)
 deterministic: true
