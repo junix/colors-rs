@@ -1,0 +1,106 @@
+{
+  "complement_pair": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#663399",
+      "#475c00"
+    ],
+    "rating": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 1.120197176950255
+    }
+  },
+  "purple_on_black": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#663399",
+      "#000000"
+    ],
+    "rating": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 2.4984682318894067
+    }
+  },
+  "purple_on_white": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#663399",
+      "#ffffff"
+    ],
+    "rating": {
+      "aa_large": true,
+      "aa_normal": true,
+      "aaa_large": true,
+      "aaa_normal": true,
+      "ratio": 8.405149896230322
+    }
+  },
+  "repaired_on_purple": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#adc777",
+      "#663399"
+    ],
+    "rating": {
+      "aa_large": true,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 4.487789210548097
+    }
+  },
+  "yellow_on_dark": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#ffe066",
+      "#1a1a1a"
+    ],
+    "rating": {
+      "aa_large": true,
+      "aa_normal": true,
+      "aaa_large": true,
+      "aaa_normal": true,
+      "ratio": 13.348392934685036
+    }
+  },
+  "alpha_without_canvas_rejected_then_measured": {
+    "argv": [
+      "chromap",
+      "--json",
+      "contrast",
+      "ratio",
+      "#66339980",
+      "#ffffff",
+      "--canvas",
+      "#1a1a1a"
+    ],
+    "rating": {
+      "aa_large": false,
+      "aa_normal": false,
+      "aaa_large": false,
+      "aaa_normal": false,
+      "ratio": 2.530703762445002
+    }
+  }
+}

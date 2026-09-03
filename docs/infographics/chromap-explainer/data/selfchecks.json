@@ -1,0 +1,111 @@
+{
+  "total": 21,
+  "passed": 21,
+  "checks": [
+    {
+      "check": "relative_luminance 复算 == 引擎全精度",
+      "passed": true,
+      "detail": "python 0.07492341159447033 vs engine 0.07492341159447033 (|Δ|=0.000e+00)"
+    },
+    {
+      "check": "contrast_on_black == (L+0.05)/0.05",
+      "passed": true,
+      "detail": "2.4984682318894067 vs 2.4984682318894067"
+    },
+    {
+      "check": "contrast_on_white == 1.05/(L+0.05)",
+      "passed": true,
+      "detail": "8.405149896230322 vs 8.405149896230322"
+    },
+    {
+      "check": "OKLab 链路复算 == 引擎 oklab() 字符串（引擎 6 位小数口径）",
+      "passed": true,
+      "detail": "python (44.02717939570896, 0.0881767563971137, -0.13386434141558456) vs engine 'oklab(44.0272% 0.088177 -0.133864)'"
+    },
+    {
+      "check": "互补色 == OKLCH 色相 +180°（模 360）",
+      "passed": true,
+      "detail": "(303.373+180)%360 = 123.37299999999999 vs 123.373"
+    },
+    {
+      "check": "互补色板两端 OKLCH 亮度相同（引擎字符串口径）",
+      "passed": true,
+      "detail": "'oklch(44.0272% 0.160296 303.373)' vs 'oklch(44.0272% 0.10849 123.373)'"
+    },
+    {
+      "check": "ensure 修复后 ratio >= minimum 4.5",
+      "passed": true,
+      "detail": "4.500000000000004 >= 4.5"
+    },
+    {
+      "check": "ensure 修复只动 OKLCH 亮度（chroma/hue 保持，引擎字符串口径）",
+      "passed": true,
+      "detail": "chroma 0.109006 -> 0.109006"
+    },
+    {
+      "check": "alpha 前景必须显式 canvas（否则引擎拒绝测量）",
+      "passed": true,
+      "detail": "chromap --json contrast ratio #66339980 #ffffff -> exit 2 (transparent colors require an explicit opaque canvas)"
+    },
+    {
+      "check": "red/green ΔsRGB == √2（独立复算）",
+      "passed": true,
+      "detail": "1.4142135623730951 vs sqrt(2)=1.4142135623730951"
+    },
+    {
+      "check": "black/white ΔsRGB == √3（独立复算）",
+      "passed": true,
+      "detail": "1.7320508075688772 vs sqrt(3)=1.7320508075688772"
+    },
+    {
+      "check": "black/white ΔE_ok ≈ 1（OKLab 亮度轴；公布矩阵系数保留 10 位小数，正逆变换非严格互逆，故非恰好 1.0）",
+      "passed": true,
+      "detail": "0.9999999934735468 (|Δ|=6.526e-09)"
+    },
+    {
+      "check": "red/green ΔE_ok 复算 == 引擎全精度",
+      "passed": true,
+      "detail": "python 0.5198128892674524 vs engine 0.5198128892674524"
+    },
+    {
+      "check": "全部语法族样本可解析且往返为同一颜色",
+      "passed": true,
+      "detail": "#abc->#aabbcc; #abcd->#aabbccdd; #aabbcc->#aabbcc; #aabbccdd->#aabbccdd; 0xaabbcc->#aabbcc; rgb(102 51 153)->#663399; rgba(102,51,153,0.5)->#66339980; hsl(270 50% 40%)->#663399; hsla(270,50%,40%,0.5)->#66339980; rebeccapurple->#663399; transparent->#00000000"
+    },
+    {
+      "check": "harmony 类 -c 9 仍返回 2 色（complementary）",
+      "passed": true,
+      "detail": "returned 2"
+    },
+    {
+      "check": "7 种 --format 各不相同",
+      "passed": true,
+      "detail": "['#663399', 'rgb(102 51 153)', 'hsl(270 50% 40%)', 'hsv(270 66.667% 60% / 1)', 'cmyk(33.333% 66.667% 0% 40% / 1)', 'oklab(44.0272% 0.088177 -0.133864)', 'oklch(44.0272% 0.160296 303.373)']"
+    },
+    {
+      "check": "CLI palette -k neighbors -c 9 --lightness-span 0.64 == design_tokens.rs 输出",
+      "passed": true,
+      "detail": "cli ['#0a0692', '#142dac', '#2648c7', '#3a62e3', '#4f7cff', '#749bff', '#99b7ff', '#bfd2ff', '#e5edff'] vs example ['#0a0692', '#142dac', '#2648c7', '#3a62e3', '#4f7cff', '#749bff', '#99b7ff', '#bfd2ff', '#e5edff']"
+    },
+    {
+      "check": "PNG 双跑 sha256 一致（确定性）",
+      "passed": true,
+      "detail": "e19676da1da6632560d5ff0ae371e8c856b6b1f3b0bc8f28cd94d46eefc78f98 vs e19676da1da6632560d5ff0ae371e8c856b6b1f3b0bc8f28cd94d46eefc78f98"
+    },
+    {
+      "check": "PNG 尺寸 == 5×104 × 80",
+      "passed": true,
+      "detail": "520x80"
+    },
+    {
+      "check": "dominant 权重和 == 1",
+      "passed": true,
+      "detail": "[0.5714285714285714, 0.2857142857142857, 0.14285714285714285]"
+    },
+    {
+      "check": "成功 0 / 全部错误路径 2",
+      "passed": true,
+      "detail": "{\"ok_convert\": 0, \"invalid_hex\": 2, \"unknown_name\": 2, \"unreachable_contrast\": 2, \"alpha_needs_canvas\": 2, \"json_conflicts_plain\": 2}"
+    }
+  ]
+}

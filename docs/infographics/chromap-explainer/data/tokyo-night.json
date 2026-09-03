@@ -1,0 +1,97 @@
+{
+  "palette": {
+    "schema_version": 1,
+    "id": "tokyo-night",
+    "name": "Tokyo Night",
+    "kind": "categorical",
+    "origin": "Tokyo Night",
+    "source": "https://github.com/folke/tokyonight.nvim",
+    "notes": "Editor darks plus sky blue and apricot. First-tier aesthetic pick.",
+    "aliases": [
+      "tokyo"
+    ],
+    "n_colors": 4,
+    "colors": [
+      {
+        "hex": "#1A1B26",
+        "rgb": [
+          26,
+          27,
+          38
+        ]
+      },
+      {
+        "hex": "#24283B",
+        "rgb": [
+          36,
+          40,
+          59
+        ]
+      },
+      {
+        "hex": "#7AA2F7",
+        "rgb": [
+          122,
+          162,
+          247
+        ]
+      },
+      {
+        "hex": "#FF9E64",
+        "rgb": [
+          255,
+          158,
+          100
+        ]
+      }
+    ]
+  },
+  "input_hexes": [
+    "#1A1B26",
+    "#24283B",
+    "#7AA2F7",
+    "#FF9E64"
+  ],
+  "dominant_argv": [
+    "chromap",
+    "--json",
+    "dominant",
+    "--count",
+    "3",
+    "#1A1B26",
+    "#24283B",
+    "#7AA2F7",
+    "#FF9E64",
+    "#1A1B26",
+    "#24283B",
+    "#7AA2F7"
+  ],
+  "dominant": [
+    {
+      "hex": "#1f2130",
+      "population": 4,
+      "weight": 0.5714285714285714
+    },
+    {
+      "hex": "#7aa2f7",
+      "population": 2,
+      "weight": 0.2857142857142857
+    },
+    {
+      "hex": "#ff9e64",
+      "population": 1,
+      "weight": 0.14285714285714285
+    }
+  ],
+  "average_argv": [
+    "chromap",
+    "--json",
+    "average",
+    "#1A1B26",
+    "#24283B",
+    "#7AA2F7",
+    "#FF9E64"
+  ],
+  "average_hex": "#967790",
+  "average_oklab": "oklab(60.7118% 0.047271 -0.024374)"
+}

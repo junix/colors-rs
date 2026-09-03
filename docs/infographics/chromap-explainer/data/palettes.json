@@ -1,0 +1,123 @@
+{
+  "base": "#4f7cff",
+  "kinds": {
+    "neighbors": [
+      "#1d3bba",
+      "#2c51d1",
+      "#3d67e8",
+      "#4f7cff",
+      "#6d96ff",
+      "#8caeff",
+      "#acc5ff"
+    ],
+    "lightness": [
+      "#00001a",
+      "#050066",
+      "#1126a6",
+      "#2e54d3",
+      "#537fff",
+      "#90b1ff",
+      "#cfdeff"
+    ],
+    "analogous-scale": [
+      "#0092ce",
+      "#008de2",
+      "#1d84fd",
+      "#4f7cff",
+      "#6c74fd",
+      "#836cf8",
+      "#9665f0"
+    ],
+    "hue-wheel": [
+      "#4f7cff",
+      "#b856d5",
+      "#e5416d",
+      "#c56f00",
+      "#8a8f00",
+      "#00a071",
+      "#0098b1"
+    ],
+    "golden": [
+      "#4f7cff",
+      "#dd5800",
+      "#009d8c",
+      "#b956d3",
+      "#9f8600",
+      "#0093ca",
+      "#e64168"
+    ],
+    "tints": [
+      "#4f7cff",
+      "#6b94ff",
+      "#88abff",
+      "#a6c1ff",
+      "#c3d6ff",
+      "#e1eaff",
+      "#ffffff"
+    ],
+    "shades": [
+      "#4f7cff",
+      "#3c60c8",
+      "#2a4594",
+      "#192c63",
+      "#0a1536",
+      "#01030f",
+      "#000000"
+    ],
+    "tones": [
+      "#4f7cff",
+      "#5880ec",
+      "#6283d8",
+      "#6b86c5",
+      "#7587b1",
+      "#7e889d",
+      "#878787"
+    ],
+    "complementary": [
+      "#4f7cff",
+      "#a98100"
+    ],
+    "analogous": [
+      "#0092ce",
+      "#4f7cff",
+      "#9665f0"
+    ],
+    "split-complementary": [
+      "#4f7cff",
+      "#ca6a00",
+      "#839100"
+    ],
+    "triadic": [
+      "#4f7cff",
+      "#e84440",
+      "#00a436"
+    ],
+    "square": [
+      "#4f7cff",
+      "#de438b",
+      "#a98100",
+      "#009e85"
+    ],
+    "tetradic": [
+      "#4f7cff",
+      "#c351c6",
+      "#a98100",
+      "#00a436"
+    ]
+  },
+  "harmony_ignores_count": {
+    "argv": [
+      "chromap",
+      "--json",
+      "palette",
+      "rebeccapurple",
+      "-k",
+      "complementary",
+      "-c",
+      "9"
+    ],
+    "requested_count": 9,
+    "returned": 2,
+    "note": "harmony 类（complementary/analogous/split/triadic/square/tetradic）长度由色相关系固定，-c 只作用于标尺类；main.rs:436-441 调 harmony() 不传 count"
+  }
+}

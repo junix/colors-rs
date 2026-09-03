@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "chromap",
+    "palette",
+    "#4f7cff",
+    "-k",
+    "neighbors",
+    "-c",
+    "5",
+    "--css-prefix",
+    "brand",
+    "--png",
+    "<path>.png"
+  ],
+  "run1_sha256": "e19676da1da6632560d5ff0ae371e8c856b6b1f3b0bc8f28cd94d46eefc78f98",
+  "run2_sha256": "e19676da1da6632560d5ff0ae371e8c856b6b1f3b0bc8f28cd94d46eefc78f98",
+  "deterministic": true,
+  "width": 520,
+  "height": 80,
+  "geometry": "5 色 1 行：5×104=520 宽 × 80 高（visual.rs GRID_COLUMNS/CELL_*）"
+}

@@ -1,0 +1,83 @@
+{
+  "forms": [
+    {
+      "family": "#hex 3 位",
+      "sample": "#abc",
+      "hex": "#aabbcc",
+      "alpha": 1.0,
+      "rgb": "rgb(170 187 204)"
+    },
+    {
+      "family": "#hex 4 位（含 alpha）",
+      "sample": "#abcd",
+      "hex": "#aabbccdd",
+      "alpha": 0.8666666666666667,
+      "rgb": "rgb(170 187 204 / 0.8667)"
+    },
+    {
+      "family": "#hex 6 位",
+      "sample": "#aabbcc",
+      "hex": "#aabbcc",
+      "alpha": 1.0,
+      "rgb": "rgb(170 187 204)"
+    },
+    {
+      "family": "#hex 8 位（含 alpha）",
+      "sample": "#aabbccdd",
+      "hex": "#aabbccdd",
+      "alpha": 0.8666666666666667,
+      "rgb": "rgb(170 187 204 / 0.8667)"
+    },
+    {
+      "family": "0x 十六进制",
+      "sample": "0xaabbcc",
+      "hex": "#aabbcc",
+      "alpha": 1.0,
+      "rgb": "rgb(170 187 204)"
+    },
+    {
+      "family": "rgb()",
+      "sample": "rgb(102 51 153)",
+      "hex": "#663399",
+      "alpha": 1.0,
+      "rgb": "rgb(102 51 153)"
+    },
+    {
+      "family": "rgba()",
+      "sample": "rgba(102,51,153,0.5)",
+      "hex": "#66339980",
+      "alpha": 0.5,
+      "rgb": "rgb(102 51 153 / 0.5)"
+    },
+    {
+      "family": "hsl()",
+      "sample": "hsl(270 50% 40%)",
+      "hex": "#663399",
+      "alpha": 1.0,
+      "rgb": "rgb(102 51 153)"
+    },
+    {
+      "family": "hsla()",
+      "sample": "hsla(270,50%,40%,0.5)",
+      "hex": "#66339980",
+      "alpha": 0.5,
+      "rgb": "rgb(102 51 153 / 0.5)"
+    },
+    {
+      "family": "命名色（149 个，含 transparent）",
+      "sample": "rebeccapurple",
+      "hex": "#663399",
+      "alpha": 1.0,
+      "rgb": "rgb(102 51 153)"
+    },
+    {
+      "family": "transparent",
+      "sample": "transparent",
+      "hex": "#00000000",
+      "alpha": 0.0,
+      "rgb": "rgb(0 0 0 / 0)"
+    }
+  ],
+  "named_count": 149,
+  "named_count_note": "named.rs 机器计数：148 条 from_rgb8 表项 + transparent 特例（named.rs:153）= 149 个 match 臂（prep_data 运行时正则统计并断言）"
+}

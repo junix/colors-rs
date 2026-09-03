@@ -1,0 +1,9 @@
+{
+  "version": "chromap 0.1.0",
+  "binary_sha256": "39baa731a44076456d43b82527fb15bdc49663390b7554bff7bed468cd658b3a",
+  "repo_commit": "f6a58fac2f5e22603105854c39fd41f577d6f13a",
+  "repo_status_untracked_only": true,
+  "repo_status_lines": [
+    "?? docs/infographics/"
+  ]
+}
