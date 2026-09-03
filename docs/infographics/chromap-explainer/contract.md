@@ -34,16 +34,20 @@
 - 重算自检（Python 复算 vs 引擎输出，落盘前全部通过，结果冻结在 `data/selfchecks.json`）：
   相对亮度、比率公式、√2 / √3 / ΔE_ok=1 三组闭式值、互补色 +180° 色相守恒、
   OKLab 链路、PNG 双跑 sha256 一致、CLI palette 与 examples/design_tokens.rs 等价。
-- 源码锚点：仓库 commit `f6a58fa`，逐条 `file:line` 见页面页脚来源表。
+- 源码锚点：仓库 commit `f6a58fa`，~~逐条 `file:line` 见页面页脚来源表~~
+  【2026-09-03 更正：页面不再印代码坐标（VERIFICATION §9）；`file:line` 全值
+  与逐字引文冻结于 VERIFICATION.md §9.2 的声明编号 A-xx 对照表，页面页脚
+  来源表以「锚点 A-xx」引用】。
 - 通解性内容（如 gamma 曲线形状、WCAG 阈值的来历）标注「通解」徽章；
-  曲线几何由 `spaces.rs:387-400` 的公式直接采样生成（公式即数据源），非手画。
+  曲线几何由 `spaces.rs:387-400` 的公式直接采样生成（公式即数据源），非手画
+  （页面上表述为「sRGB 标准传递函数」——发布标准名，非代码引用）。
 
 ## 叙事顺序（四故事 × 11 面板）
 
 1. **壹 架构与数据流**
    - `p-hero`：inspect 一个颜色——七空间全表示 + 三组度量全精度（实跑冻结）
    - `p-cli`：CLI 表面 → parse → Color 内核 → 11 子命令 → format/visual 双出口；退出码 0/2
-   - `p-parse`：parse.rs 十个语法族、十一发实测样本（命名色 149 个含 transparent）
+   - `p-parse`：解析器十个语法族、十一发实测样本（命名色 149 个含 transparent）
 2. **贰 机制通解（互补色 ≠ 可读前景色）**
    - `p-spaces`：七空间转换图——gamma 域三空间 vs linear→OKLab 链，rebeccapurple 全程取值
    - `p-complement`：论点面板——互补色板同亮度 → 比率 1.1202 全不及格 → ensure 修复封套
@@ -54,7 +58,8 @@
    - `p-kinds`：14 种 palette kind 实测色板（harmony 类长度固定，-c 不生效）+ 7 种输出格式
 4. **肆 操作管线**
    - `p-tokens`：品牌色 → 9 级明度标尺 → 逐级对比度实测 → CSS 变量 + PNG 冻结（design_tokens 工作流）
-   - `p-evidence`：本图自己的来路——prep_data.py 冻结管线与自检清单
+   - `p-evidence`：本图自己的来路——冻结 → 生成 → 门禁 → 断言渲染的管线与自检清单
+     （页面不印生成器文件名与重建命令，见 VERIFICATION §9）
 
 ## 媒介与尺寸
 
@@ -65,7 +70,9 @@
   TEAL `#2A9D8F` · TINT `#DDF2EC` · WARN `#E76F51` · WARN_LT `#F4C7B8` · OUTCOME `#E9C46A`。
   面板内出现的**样本色块**（如 #663399、#475c00）一律是引擎冻结输出，不是编辑装饰色。
 - 字体：Source Han Serif SC（标题）/ Source Han Sans SC（正文）/ 0xProto Nerd Font · SF Mono · Menlo（代码）。
-- 中文正文；代码符号、子命令、字段名一律英文原样；浮点全精度。
+- 中文正文；~~代码符号、子命令、字段名一律英文原样~~【2026-09-03 更正：代码
+  符号（标识符/文件名/行号）不再上页，逻辑用领域词与图承载（VERIFICATION §9）；
+  子命令、旗标与引擎 JSON 输出字段名仍英文原样】；浮点全精度。
 
 ## 面积预算
 
