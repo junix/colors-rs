@@ -157,7 +157,7 @@ figcaption .figno {
   font-family: '0xProto Nerd Font','SF Mono',Menlo,monospace;
   color: #356A79;
 }
-figcaption .fignote { font-weight: 400; color: #5D6873; font-size: 11.5px; }
+figcaption .fignote { font-weight: 400; color: #5D6873; font-size: 12px; }
 footer { margin-top: 72px; border-top: 2px solid #17212B; padding-top: 24px; }
 footer h3 { font-size: 15px; margin-bottom: 12px; }
 table.src { border-collapse: collapse; width: 100%; font-size: 12px; }
@@ -170,7 +170,7 @@ table.src td.mono, .mono {
 .prov { background: #FFFFFF; border: 1px solid #D9E1E3; border-radius: 8px;
   padding: 16px 20px; margin-top: 20px; font-size: 12px; color: #5D6873; }
 .prov .mono { color: #28505C; }
-.colophon { margin-top: 28px; font-size: 11px; color: #5D6873; }
+.colophon { margin-top: 28px; font-size: 12px; color: #5D6873; }
 """
 
 

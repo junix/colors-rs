@@ -8,8 +8,8 @@ VERIFICATION.md 里找到可重跑的对拍命令。
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 长图页面（1200 CSS px 宽，8943 CSS px 高；零 JS / 零 CDN / 无外部请求；不印代码坐标，声明以锚点编号 A-xx 引用 VERIFICATION §9.2） |
-| `chromap-explainer@2x.png` | 最终位图 2400×17886（= 1200×8943 × dpr 2，stitch 断言通过） |
+| `index.html` | 长图页面（1200 CSS px 宽，8984 CSS px 高；零 JS / 零 CDN / 无外部请求；SVG 文字下限 11 px、中文下限 12 px；不印代码坐标，声明以锚点编号 A-xx 引用 VERIFICATION §9.2） |
+| `chromap-explainer@2x.png` | 最终位图 2400×17968（= 1200×8984 × dpr 2，stitch 断言通过） |
 | `chromap-explainer-thumb.png` | 1/4 缩略图（层级节奏检查） |
 | `svg/` | 11 个面板的独立 SVG（svg-linter 门禁对象） |
 | `data/` | 20 个冻结证据 JSON + `provenance.json`（每条完整 argv） |

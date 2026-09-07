@@ -42,19 +42,19 @@ def load(name):
 # shared helpers
 
 def node(x, y, w, h, title, sub=(), fill=PAPER, stroke=INK, sw=1.2,
-         tsize=13.5, ssize=11, tcolor=INK, dash=None, mono_title=False):
+         tsize=13.5, ssize=12, tcolor=INK, dash=None, mono_title=False):
     subs = [sub] if isinstance(sub, str) else list(sub)
     out = [rect(x, y, w, h, fill=fill, stroke=stroke, sw=sw, rx=6, dash=dash)]
     ty = y + h / 2 + 4.5 - (9 if subs else 0)
     out.append((mono if mono_title else text)(x + w / 2, ty, title, size=tsize,
                fill=tcolor, weight="600", anchor="middle"))
     for i, s in enumerate(subs):
-        out.append(text(x + w / 2, ty + 16 + i * 14, s, size=ssize,
+        out.append(text(x + w / 2, ty + 17 + i * 15, s, size=ssize,
                         fill=MUTED, anchor="middle"))
     return "".join(out)
 
 
-def chip(x, y, s, size=10.5, fill=TINT, tcolor=FLOW_DK, h=17, pad=5,
+def chip(x, y, s, size=11, fill=TINT, tcolor=FLOW_DK, h=17, pad=5,
          mono_font=True, weight="400", stroke=None):
     """Auto-sized pill from a measured text width. (x,y) = top-left."""
     w = text_width(s, size, mono=mono_font) + pad * 2
@@ -64,7 +64,7 @@ def chip(x, y, s, size=10.5, fill=TINT, tcolor=FLOW_DK, h=17, pad=5,
     return "".join(out), w
 
 
-def chiprow(x, y, items, size=10.5, gap=5, **kw):
+def chiprow(x, y, items, size=11, gap=5, **kw):
     out, cx = [], x
     for s in items:
         c, w = chip(cx, y, s, size=size, **kw)
@@ -74,7 +74,8 @@ def chiprow(x, y, items, size=10.5, gap=5, **kw):
 
 
 def srcnote(x, y, s):
-    return mono(x, y, s, size=10, fill=MUTED)
+    # reader-visible provenance line: contains CJK, so floor is 12 px
+    return mono(x, y, s, size=12, fill=MUTED)
 
 
 def swatch(x, y, s, w=14, h=14, stroke=RULE):
@@ -103,7 +104,7 @@ def p_hero(insp):
     o.append(rect(24, 20, 566, 30, fill=CODE_BG, rx=5))
     o.append(mono(38, 40, "chromap --json inspect rebeccapurple", size=12.5,
                   fill=INK, weight="600"))
-    c0, _ = chip(622, 26, "exit 0 · stdout JSON", size=10.5, fill="#FFFFFF",
+    c0, _ = chip(622, 26, "exit 0 · stdout JSON", size=11, fill="#FFFFFF",
                  stroke=RULE)
     o.append(c0)
 
@@ -112,17 +113,17 @@ def p_hero(insp):
     o.append(rect(ix, iy, iw, ih, fill="#FFFFFF", stroke=INK, sw=1.3, rx=7))
     o.append(swatch(ix + 20, iy + 20, c["hex"], w=64, h=64, stroke=RULE))
     o.append(mono(ix + 100, iy + 44, c["hex"], size=21, fill=INK, weight="600"))
-    o.append(mono(ix + 100, iy + 66, "rebeccapurple", size=11.5, fill=MUTED))
-    o.append(mono(ix + 100, iy + 84, "四分量内核 r·g·b·a · 全双精度", size=10.5,
+    o.append(mono(ix + 100, iy + 66, "rebeccapurple", size=12, fill=MUTED))
+    o.append(mono(ix + 100, iy + 84, "四分量内核 r·g·b·a · 全双精度", size=12,
                   fill=FLOW_DK))
     o.append(mono(ix + 20, iy + 112,
                   f"rgba8  r={c['rgba8']['r']} g={c['rgba8']['g']} "
-                  f"b={c['rgba8']['b']} a={c['rgba8']['a']}", size=10.5,
+                  f"b={c['rgba8']['b']} a={c['rgba8']['a']}", size=11,
                   fill=INK))
     o.append(mono(ix + 20, iy + 132,
-                  "gamma 域 0.400000 0.200000 0.600000", size=10.5, fill=INK))
+                  "gamma 域 0.400000 0.200000 0.600000", size=12, fill=INK))
     o.append(mono(ix + 20, iy + 152,
-                  "alpha  1.0（不透明，可直接测对比度）", size=10, fill=MUTED))
+                  "alpha  1.0（不透明，可直接测对比度）", size=12, fill=MUTED))
 
     # seven space cards (4 + 3), all values frozen verbatim
     spaces = [("hex", c["hex"]), ("rgb", c["rgb"]), ("hsl", c["hsl"]),
@@ -133,25 +134,25 @@ def p_hero(insp):
         cx = gx + (i % 4) * (gw + gg)
         cy = gy + (i // 4) * (gh + gg)
         o.append(rect(cx, cy, gw, gh, fill=PAPER, stroke=RULE, sw=1, rx=5))
-        o.append(mono(cx + 10, cy + 18, name, size=10.5, fill=FLOW_DK,
+        o.append(mono(cx + 10, cy + 18, name, size=11, fill=FLOW_DK,
                       weight="600"))
         if len(val) > 22:
-            cut = val.index(" ", val.index(" ") + 1)
-            o.append(mono(cx + 10, cy + 34, val[:cut], size=9.5, fill=INK))
-            o.append(mono(cx + 10, cy + 46, val[cut + 1:], size=9.5, fill=INK))
+            cut = val.index(" ")
+            o.append(mono(cx + 10, cy + 34, val[:cut], size=11, fill=INK))
+            o.append(mono(cx + 10, cy + 48, val[cut + 1:], size=11, fill=INK))
         else:
             o.append(mono(cx + 10, cy + 38, val, size=11, fill=INK))
     note_x = gx + 3 * (gw + gg)
-    o.append(rect(note_x, gy + gh + gg, gw, gh, fill=TINT, rx=5))
+    o.append(rect(note_x, gy + gh + gg, gw, 58, fill=TINT, rx=5))
     o.append(text(note_x + 10, gy + gh + gg + 19, "七种表示 · 一个内核",
-                  size=10.5, fill=FLOW_DK, weight="600"))
-    o.append(text(note_x + 10, gy + gh + gg + 34, "颜色内核是唯一真相，",
-                  size=9, fill=MUTED))
-    o.append(text(note_x + 10, gy + gh + gg + 46, "其余六种都是投影",
-                  size=9, fill=MUTED))
+                  size=12, fill=FLOW_DK, weight="600"))
+    o.append(text(note_x + 10, gy + gh + gg + 35, "颜色内核是唯一真相，",
+                  size=12, fill=MUTED))
+    o.append(text(note_x + 10, gy + gh + gg + 51, "其余六种都是投影",
+                  size=12, fill=MUTED))
 
     # three measurement cards, full precision
-    o.append(text(388, 212, "度量（引擎全精度，不截断）", size=11.5, fill=INK,
+    o.append(text(388, 212, "度量（引擎全精度，不截断）", size=12, fill=INK,
                   weight="600"))
     meas = [("relative_luminance", repr(insp["relative_luminance"]),
              "0.2126 R + 0.7152 G + 0.0722 B"),
@@ -162,11 +163,11 @@ def p_hero(insp):
     my = 222
     for i, (name, val, formula) in enumerate(meas):
         cx = 388 + i * 226
-        o.append(rect(cx, my, 218, 74, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
-        o.append(mono(cx + 12, my + 20, name, size=10.5, fill=FLOW_DK,
+        o.append(rect(cx, my, 222, 74, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
+        o.append(mono(cx + 12, my + 20, name, size=11, fill=FLOW_DK,
                       weight="600"))
         o.append(mono(cx + 12, my + 42, val, size=11, fill=INK, weight="600"))
-        o.append(mono(cx + 12, my + 60, formula, size=9, fill=MUTED))
+        o.append(mono(cx + 12, my + 60, formula, size=11, fill=MUTED))
 
     # bottom: parse accepts ten syntax families for the same input
     pf = load("parse-forms.json")
@@ -176,15 +177,15 @@ def p_hero(insp):
                   size=12.5, fill=INK, weight="600"))
     fx, fy = 24, 358
     for f in forms:
-        cchip, w = chip(fx, fy, f["sample"], size=10.5)
+        cchip, w = chip(fx, fy, f["sample"], size=11)
         o.append(cchip)
         o.append(swatch(fx + 2, fy + 21, f["hex"], w=12, h=12))
-        fx += max(w, text_width(f["hex"], 10.5, mono=True) + 10) + 14
+        fx += max(w, text_width(f["hex"], 11, mono=True) + 10) + 14
         if fx > 940:
             fx, fy = 24, fy + 44
-    o.append(text(24, fy + 54,
+    o.append(text(24, fy + 56,
                   "十一个样本（#hex 四种宽度 / 0x / rgb·rgba / hsl·hsla / 命名色 / transparent）"
-                  "全部归一到同一族 sRGB；alpha 进入第 4 分量", size=10.5, fill=MUTED))
+                  "全部归一到同一族 sRGB；alpha 进入第 4 分量", size=12, fill=MUTED))
     o.append(srcnote(24, H - 16,
                      "值全部来自 data/inspect-rebeccapurple.json 与 data/parse-forms.json"
                      "（chromap --json inspect / convert 实跑冻结）"))
@@ -197,19 +198,19 @@ def p_hero(insp):
 def p_cli(cli):
     W, H = 1072, 500
     o = []
-    ny, nh = 22, 62
+    ny, nh = 22, 64
     o.append(node(24, ny, 208, nh, "chromap <argv>",
                   ("全局旗标先于子命令",), mono_title=True, tsize=13.5))
     o.append(node(276, ny, 208, nh, "解析：十个语法族",
                   ("同一输入语言 → 一个颜色内核",), tsize=13.5))
     o.append(node(528, ny, 220, nh, "颜色内核",
                   ("归一化 gamma sRGB + alpha", "四分量全双精度"),
-                  tsize=13.5, ssize=10))
+                  tsize=13.5, ssize=12))
     for x1, x2 in [(232, 276), (484, 528)]:
         o.append(connector(x1, ny + nh / 2, x2, ny + nh / 2))
-    o.append(text(254, ny + nh / 2 - 10, "字符串", size=9.5, fill=MUTED,
+    o.append(text(254, ny + nh / 2 - 10, "字符串", size=12, fill=MUTED,
                   anchor="middle"))
-    o.append(text(506, ny + nh / 2 - 10, "双精度×4", size=9.5, fill=MUTED,
+    o.append(text(506, ny + nh / 2 - 10, "双精度×4", size=12, fill=MUTED,
                   anchor="middle"))
     # global flags
     o.append(chiprow(24, ny + nh + 12, [
@@ -217,7 +218,7 @@ def p_cli(cli):
         "--color auto|always|never"])[0])
     o.append(text(24, ny + nh + 52,
                   "全局旗标作用于所有「产色」子命令；--json 与 --plain 互斥（实测 exit 2）",
-                  size=10, fill=MUTED))
+                  size=12, fill=MUTED))
 
     # module groups (all 11 subcommands, grouped by role)
     gy, gh2 = 152, 158
@@ -226,7 +227,7 @@ def p_cli(cli):
             ("inspect", "七空间 + 亮度 + 黑白对比度"),
             ("contrast", "ratio · pick · black-white · ensure"),
             ("", "WCAG 四档阈值；alpha 需 --canvas"),
-            ("distance", "ΔE_ok 与 ΔsRGB 同时输出")], 312),
+            ("distance", "ΔE_ok 与 ΔsRGB 同时输出")], 348),
         ("生成 generate", [
             ("palette -k ×14", "和谐类长度固定，标尺类 -c 生效"),
             ("adjust", "OKLCH/HSL 明度·饱和·色相微调"),
@@ -236,7 +237,7 @@ def p_cli(cli):
             ("composite", "source-over，sRGB 或 linear 域"),
             ("average", "alpha 感知的均值"),
             ("dominant", "OKLab k-means 聚类代表色"),
-            ("（无隐藏状态）", "每次运行 = 纯函数")], 300),
+            ("（无隐藏状态）", "每次运行 = 纯函数")], 330),
     ]
     gx = 24
     for title, rows, gw in groups:
@@ -245,8 +246,9 @@ def p_cli(cli):
                       weight="600"))
         yy = gy + 44
         for name, note in rows:
-            o.append(mono(gx + 14, yy, name, size=10.5, fill=INK))
-            o.append(text(gx + 132, yy, note, size=9.5, fill=MUTED))
+            nsize = 12 if any(ord(ch) > 0x2E7F for ch in name) else 11
+            o.append(mono(gx + 14, yy, name, size=nsize, fill=INK))
+            o.append(text(gx + 124, yy, note, size=12, fill=MUTED))
             yy += 27
         gx += gw + 14
     o.append(connector(638, ny + nh + 62, 638, gy - 4))
@@ -256,13 +258,13 @@ def p_cli(cli):
     o.append(node(24, ey, 420, eh, "字符串出口",
                   ("七种字符串表示（--format 选择）",
                    "hex / rgb / hsl / hsv / cmyk / oklab / oklch"),
-                  tsize=12.5, ssize=10))
+                  tsize=12.5, ssize=12))
     o.append(node(476, ey, 300, eh, "像素出口",
                   ("ANSI 终端色块（--color 控制）", "PNG 色板网格 104×80 cell"),
-                  tsize=12.5, ssize=10))
+                  tsize=12.5, ssize=12))
     o.append(node(808, ey, 240, eh, "stdout",
                   ("人类可读 / --json", "exit 0 成功 · 2 失败"),
-                  mono_title=True, tsize=13, ssize=10))
+                  mono_title=True, tsize=13, ssize=12))
     for x1, x2 in [(444, 476), (776, 808)]:
         o.append(connector(x1, ey + eh / 2, x2, ey + eh / 2))
     o.append(connector(234, gy + gh2, 234, ey - 4))
@@ -277,7 +279,7 @@ def p_cli(cli):
         cx = 24 + i * 360
         o.append(rect(cx, sy, 348, 40, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
         o.append(mono(cx + 16, sy + 27, code, size=19, fill=color, weight="600"))
-        o.append(text(cx + 44, sy + 25, meaning, size=10.5, fill=INK))
+        o.append(text(cx + 44, sy + 25, meaning, size=12, fill=INK))
     o.append(srcnote(24, sy - 8,
                      f"11 个功能子命令（chromap --help，{len(cli['subcommands'])} 个逐字对拍 data/cli.json）"
                      " · 退出码六探针实测 data/exits.json"))
@@ -290,39 +292,39 @@ def p_cli(cli):
 def p_parse(forms):
     rows = forms["forms"]
     n_breaks = 2
-    W, H = 1072, 96 + len(rows) * 33 + n_breaks * 20 + 70
+    W, H = 1072, 96 + len(rows) * 33 + n_breaks * 20 + 74
     o = []
     cols = [24, 300, 560, 700]
     hy = 34
-    o.append(text(cols[0], hy, "语法族（十族）", size=11, fill=MUTED, weight="600"))
-    o.append(text(cols[1], hy, "实测样本", size=11, fill=MUTED, weight="600"))
-    o.append(text(cols[2], hy, "解析结果（hex）", size=11, fill=MUTED, weight="600"))
-    o.append(text(cols[3], hy, "alpha", size=11, fill=MUTED, weight="600"))
-    o.append(text(830, hy, "归属", size=11, fill=MUTED, weight="600"))
+    o.append(text(cols[0], hy, "语法族（十族）", size=12, fill=MUTED, weight="600"))
+    o.append(text(cols[1], hy, "实测样本", size=12, fill=MUTED, weight="600"))
+    o.append(text(cols[2], hy, "解析结果（hex）", size=12, fill=MUTED, weight="600"))
+    o.append(text(cols[3], hy, "alpha", size=12, fill=MUTED, weight="600"))
+    o.append(text(830, hy, "归属", size=12, fill=MUTED, weight="600"))
     y = hy + 16
     group_breaks = {5: "函数记法：空格现代 / 逗号传统均可，/ alpha 亦支持",
                     9: "命名色表（149 色，含 transparent）"}
     for i, f in enumerate(rows):
         if i in group_breaks and i:
-            o.append(text(cols[0], y + 12, "— " + group_breaks[i], size=9.5,
+            o.append(text(cols[0], y + 12, "— " + group_breaks[i], size=12,
                           fill=FLOW_DK))
             y += 20
         o.append(line(24, y, 1048, y, stroke=RULE, w=0.8))
-        o.append(text(cols[0], y + 19, f["family"], size=10.5, fill=INK))
+        o.append(text(cols[0], y + 19, f["family"], size=12, fill=INK))
         o.append(mono(cols[1], y + 19, f["sample"], size=11, fill=FLOW_DK,
                       weight="600"))
         o.append(swatch(cols[2], y + 8, f["hex"], w=13, h=13))
         o.append(mono(cols[2] + 20, y + 19, f["hex"], size=11, fill=INK))
-        o.append(mono(cols[3], y + 19, repr(f["alpha"]), size=10.5, fill=MUTED))
+        o.append(mono(cols[3], y + 19, repr(f["alpha"]), size=11, fill=MUTED))
         if f["sample"] in ("rgb(102 51 153)", "hsl(270 50% 40%)",
                            "rebeccapurple"):
-            o.append(mono(830, y + 19, "→ 同一颜色 #663399", size=10, fill=TEAL))
+            o.append(mono(830, y + 19, "→ 同一颜色 #663399", size=12, fill=TEAL))
         y += 33
     o.append(line(24, y, 1048, y, stroke=INK, w=1.1))
     o.append(srcnote(24, y + 20,
                      "data/parse-forms.json（chromap --json convert <样本> 逐行实跑）· "
                      "十族口径与 149 计数：声明 A-03 · A-04（证据链见 VERIFICATION）"))
-    o.append(srcnote(24, y + 37,
+    o.append(srcnote(24, y + 38,
                      "十族 = #hex 3/4/6/8 位 + 0x + rgb()/rgba() + hsl()/hsla() + 命名色；"
                      "0x 前缀同样接受 3/4/6/8 位"))
     return svg("p-parse", W, H, "".join(o))
@@ -335,14 +337,14 @@ def p_spaces(chain, insp):
     W, H = 1072, 474
     o = []
     # core
-    cx, cy, cw, ch = 430, 170, 212, 84
+    cx, cy, cw, ch = 420, 170, 232, 84
     o.append(rect(cx, cy, cw, ch, fill="#FFFFFF", stroke=INK, sw=1.4, rx=7))
     o.append(text(cx + cw / 2, cy + 26, "颜色内核", size=15, fill=INK,
                   weight="600", anchor="middle"))
     o.append(mono(cx + cw / 2, cy + 46, "(0.4  0.2  0.6  1.0)", size=11.5,
                   fill=FLOW_DK, anchor="middle"))
     o.append(text(cx + cw / 2, cy + 66, "双精度 gamma sRGB + alpha · 唯一内核",
-                  size=10, fill=MUTED, anchor="middle"))
+                  size=12, fill=MUTED, anchor="middle"))
 
     # left cluster: gamma-domain projections (engine strings verbatim)
     left = [("HSL", insp["color"]["hsl"], "max/min 几何"),
@@ -353,13 +355,13 @@ def p_spaces(chain, insp):
     entries = [cy + 20, cy + ch / 2, cy + ch - 20]
     for (name, val, gloss), ey in zip(left, entries):
         o.append(rect(24, ly, 320, 60, fill=PAPER, stroke=RULE, sw=1.1, rx=6))
-        o.append(mono(38, ly + 20, name, size=12, fill=FLOW_DK, weight="600"))
-        o.append(mono(38, ly + 40, val, size=10.5, fill=INK))
-        o.append(mono(258, ly + 38, gloss, size=9, fill=MUTED))
+        o.append(mono(38, ly + 19, name, size=12, fill=FLOW_DK, weight="600"))
+        o.append(mono(38, ly + 36, val, size=11, fill=INK))
+        o.append(mono(38, ly + 53, gloss, size=12, fill=MUTED))
         o.append(connector(344, ly + 30, cx - 6, ey, stroke=FLOW_LT,
                            w=1.2, marker=None))
         ly += 72
-    o.append(text(24, ly + 6, "gamma 域直接投影（不经过 linear）", size=10.5,
+    o.append(text(24, ly + 8, "gamma 域直接投影（不经过 linear）", size=12,
                   fill=MUTED))
 
     # right chain: linear -> oklab -> oklch (oklab/oklch verbatim from engine)
@@ -374,26 +376,28 @@ def p_spaces(chain, insp):
     ]
     ry = 40
     for i, (name, val, gloss) in enumerate(right):
-        o.append(rect(728, ry, 320, 66, fill=PAPER, stroke=RULE, sw=1.1, rx=6))
-        o.append(text(742, ry + 18, name, size=12, fill=FLOW_DK, weight="600"))
-        o.append(mono(742, ry + 36, val, size=10, fill=INK))
-        o.append(mono(742, ry + 54, gloss, size=8.5, fill=MUTED))
+        o.append(rect(716, ry, 332, 66, fill=PAPER, stroke=RULE, sw=1.1, rx=6))
+        o.append(text(730, ry + 18, name, size=12, fill=FLOW_DK, weight="600"))
+        o.append(mono(730, ry + 36, val, size=11, fill=INK))
+        # 43-char transfer-function gloss only fits at 11 px; CJK glosses 12
+        gsize = 12 if any(ord(ch) > 0x2E7F for ch in gloss) else 11
+        o.append(mono(730, ry + 54, gloss, size=gsize, fill=MUTED))
         if i < 2:
-            o.append(connector(888, ry + 66, 888, ry + 80 - 4))
+            o.append(connector(882, ry + 66, 882, ry + 80 - 4))
         ry += 80
-    o.append(text(728, ry + 6, "linear → 感知域链路（WCAG 与 OKLCH 都从这走）",
-                  size=10.5, fill=MUTED))
-    o.append(connector(cx + cw, cy + ch / 2, 728 - 6, 70, stroke=FLOW, w=1.6))
-    o.append(text(452, 144, "2.4 幂 gamma 解码", size=10, fill=FLOW_DK))
+    o.append(text(716, ry + 8, "linear → 感知域链路（WCAG 与 OKLCH 都从这走）",
+                  size=12, fill=MUTED))
+    o.append(connector(cx + cw, cy + ch / 2, 716 - 6, 70, stroke=FLOW, w=1.6))
+    o.append(text(452, 144, "2.4 幂 gamma 解码", size=12, fill=FLOW_DK))
 
     # return path: gamut-safe mapping
-    o.append(rect(430, 288, 618, 76, fill=TINT, rx=6))
-    o.append(text(446, 310, "回程映射：色域外不报错——",
-                  size=11, fill=INK, weight="600"))
-    o.append(text(446, 329, "二分 32 步压 chroma，在保留 lightness 与 hue 的前提下",
-                  size=10.5, fill=INK))
-    o.append(text(446, 347, "落回可显示范围；palette / ensure 的修复全部经由它",
-                  size=10.5, fill=INK))
+    o.append(rect(420, 288, 628, 76, fill=TINT, rx=6))
+    o.append(text(436, 312, "回程映射：色域外不报错——",
+                  size=12, fill=INK, weight="600"))
+    o.append(text(436, 331, "二分 32 步压 chroma，在保留 lightness 与 hue 的前提下",
+                  size=12, fill=INK))
+    o.append(text(436, 350, "落回可显示范围；palette / ensure 的修复全部经由它",
+                  size=12, fill=INK))
     o.append(connector(536, 288, 536, cy + ch, stroke=FLOW, w=1.4,
                        dash="5 4", marker=None))
 
@@ -413,15 +417,15 @@ def p_complement(comp, ratio, ensure):
     # VERIFICATION §3.2 / claim A-01 — the page carries the claim, not the quote)
     o.append(rect(24, 18, 1024, 56, fill=CODE_BG, rx=6))
     o.append(text(40, 40, "设计边界（引擎库文档第一段明文）：色环互补与可读前景是两个独立概念——",
-                  size=11.5, fill=FLOW_DK))
+                  size=12, fill=FLOW_DK))
     o.append(text(40, 58, "色相关系归生成路径，实测对比归修复路径；两条代码路径互不替代。",
-                  size=11.5, fill=FLOW_DK))
-    o.append(mono(790, 40, "声明 A-01", size=10, fill=MUTED))
-    o.append(mono(790, 58, "引文逐字见 VERIFICATION", size=10, fill=MUTED))
+                  size=12, fill=FLOW_DK))
+    o.append(mono(790, 40, "声明 A-01", size=12, fill=MUTED))
+    o.append(mono(790, 58, "引文逐字见 VERIFICATION", size=12, fill=MUTED))
 
     # left: palette command, two swatches, identical L
     lx, ly = 24, 96
-    o.append(rect(lx, ly, 344, 268, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
+    o.append(rect(lx, ly, 344, 288, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
     o.append(mono(lx + 16, ly + 22, "palette rebeccapurple -k complementary",
                   size=11, fill=INK, weight="600"))
     l0, c0, h0 = parse_oklch(comp["colors"][0]["oklch"])
@@ -433,23 +437,24 @@ def p_complement(comp, ratio, ensure):
         o.append(mono(lx + 100, yy + 16, col["hex"], size=13, fill=INK,
                       weight="600"))
         o.append(mono(lx + 100, yy + 34, f"oklch({lch[0]} {lch[1]} {lch[2]})",
-                      size=10, fill=INK))
-        o.append(mono(lx + 100, yy + 52, f"L {lch[0]}  ← 同一亮度", size=10.5,
+                      size=11, fill=INK))
+        o.append(mono(lx + 100, yy + 52, f"L {lch[0]}  ← 同一亮度", size=12,
                       fill=WARN, weight="600"))
         o.append(mono(lx + 100, yy + 68,
                       f"H {lch[2]}  " + ("本体" if i == 0 else f"= {h0} + 180°（模 360）"),
-                      size=10, fill=FLOW_DK))
-    o.append(text(lx + 16, ly + 250,
-                  "互补 = OKLCH 只把色相转 180°，亮度与 chroma 不动 →", size=10.5,
+                      size=12, fill=FLOW_DK))
+    o.append(text(lx + 16, ly + 248, "互补 = OKLCH 只把色相转 180°，", size=12,
                   fill=INK))
-    o.append(text(lx + 16, ly + 266, "两端相对亮度几乎相同 → 比率贴着 1", size=10.5,
+    o.append(text(lx + 16, ly + 264, "亮度与 chroma 不动 →", size=12,
+                  fill=INK))
+    o.append(text(lx + 16, ly + 282, "两端相对亮度几乎相同 → 比率贴着 1", size=12,
                   fill=INK))
 
     # middle: measured ratio, all thresholds fail, live exhibit
     mx, my = 392, 96
-    o.append(rect(mx, my, 330, 268, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
+    o.append(rect(mx, my, 330, 288, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
     o.append(mono(mx + 16, my + 22, "contrast ratio '#663399' '#475c00'",
-                  size=10, fill=INK, weight="600"))
+                  size=11, fill=INK, weight="600"))
     o.append(mono(mx + 16, my + 50, ratio_str(ratio["ratio"]), size=16,
                   fill=WARN, weight="600"))
     ths = [("aa_large 3:1", ratio["aa_large"]),
@@ -460,61 +465,61 @@ def p_complement(comp, ratio, ensure):
         yy = my + 72 + i * 20
         o.append(text(mx + 16, yy, "✗" if not ok else "✓", size=11,
                       fill=WARN if not ok else TEAL, weight="600"))
-        o.append(mono(mx + 36, yy, name, size=10, fill=MUTED))
+        o.append(mono(mx + 36, yy, name, size=11, fill=MUTED))
     # live exhibit: real colored text on real background
     o.append(rect(mx + 170, my + 62, 148, 96, fill="#663399", rx=4))
     o.append(text(mx + 244, my + 116, "Aa 可读？", size=17, fill="#475c00",
                   weight="600", anchor="middle"))
-    o.append(text(mx + 244, my + 138, "把互补色当正文用", size=10.5,
+    o.append(text(mx + 244, my + 138, "把互补色当正文用", size=12,
                   fill="#475c00", anchor="middle"))
-    o.append(text(mx + 16, my + 196, "四档阈值全部 false ——", size=10.5, fill=INK))
-    o.append(text(mx + 16, my + 214, "色环说它们「配」，", size=10.5, fill=INK))
-    o.append(text(mx + 16, my + 232, "WCAG 说它们「读不出」。", size=10.5, fill=INK))
-    o.append(mono(mx + 16, my + 254, "两套度量，互不替代", size=10, fill=MUTED))
+    o.append(text(mx + 16, my + 196, "四档阈值全部 false ——", size=12, fill=INK))
+    o.append(text(mx + 16, my + 214, "色环说它们「配」，", size=12, fill=INK))
+    o.append(text(mx + 16, my + 232, "WCAG 说它们「读不出」。", size=12, fill=INK))
+    o.append(mono(mx + 16, my + 254, "两套度量，互不替代", size=12, fill=MUTED))
 
     # right: ensure repair envelope
     rx_, ry_ = 746, 96
-    o.append(rect(rx_, ry_, 302, 268, fill=TINT, stroke=RULE, sw=1.1, rx=6))
-    o.append(mono(rx_ + 16, ry_ + 22, "contrast ensure '#475c00'", size=10,
+    o.append(rect(rx_, ry_, 302, 288, fill=TINT, stroke=RULE, sw=1.1, rx=6))
+    o.append(mono(rx_ + 16, ry_ + 22, "contrast ensure '#475c00'", size=11,
                   fill=INK, weight="600"))
-    o.append(mono(rx_ + 16, ry_ + 38, "  '#663399' --target aa", size=10,
+    o.append(mono(rx_ + 16, ry_ + 38, "  '#663399' --target aa", size=11,
                   fill=INK, weight="600"))
     o.append(rect(rx_ + 16, ry_ + 50, 270, 96, fill="#663399", rx=4))
     o.append(text(rx_ + 151, ry_ + 102, "Aa 可读 ✓", size=17, fill="#adc777",
                   weight="600", anchor="middle"))
-    o.append(text(rx_ + 151, ry_ + 124, "修复后的前景", size=10.5, fill="#adc777",
+    o.append(text(rx_ + 151, ry_ + 124, "修复后的前景", size=12, fill="#adc777",
                   anchor="middle"))
     o.append(mono(rx_ + 16, ry_ + 168,
                   f"#475c00 → {ensure['color']['hex']}", size=11, fill=INK,
                   weight="600"))
     ol0, oc0, oh0 = parse_oklch(ensure["original"]["oklch"])
     nl0, nc0, nh0 = parse_oklch(ensure["color"]["oklch"])
-    o.append(mono(rx_ + 16, ry_ + 188, f"L {ol0} → {nl0}", size=10, fill=INK))
-    o.append(mono(rx_ + 16, ry_ + 204, f"C {oc0} → {nc0}（保持）", size=10,
+    o.append(mono(rx_ + 16, ry_ + 188, f"L {ol0} → {nl0}", size=11, fill=INK))
+    o.append(mono(rx_ + 16, ry_ + 204, f"C {oc0} → {nc0}（保持）", size=12,
                   fill=MUTED))
     o.append(mono(rx_ + 16, ry_ + 220, f"ratio → {repr(ensure['ratio'])}",
-                  size=10, fill=TEAL, weight="600"))
+                  size=11, fill=TEAL, weight="600"))
     o.append(mono(rx_ + 16, ry_ + 240, f"direction: {ensure['direction']}",
-                  size=10, fill=MUTED))
-    o.append(mono(rx_ + 16, ry_ + 256, "48 步二分 L，取 OKLab 更近的一侧", size=9,
+                  size=11, fill=MUTED))
+    o.append(mono(rx_ + 16, ry_ + 256, "48 步二分 L，取 OKLab 更近的一侧", size=12,
                   fill=MUTED))
 
     # bottom: two independent code paths
-    by = 384
+    by = 398
     o.append(node(24, by, 496, 64, "色相关系生成：互补 = 本体色相 +180°",
                   ("偏移表 [0,180] 等 · 只动色相，不碰亮度与彩度"),
-                  tsize=12, ssize=10))
+                  tsize=12, ssize=12))
     o.append(node(544, by, 504, 64, "可读性修复：二分 OKLCH 亮度",
                   ("48 步搜索 · 方向取 OKLab 更近侧 · 色相保持"),
-                  tsize=12, ssize=10))
+                  tsize=12, ssize=12))
     o.append(text(536, by + 34, "≠", size=24, fill=WARN, weight="600",
                   anchor="middle"))
     o.append(srcnote(24, by + 86,
                      "全部数值 = data/complementary.json · ratio-complement.json · ensure-complement.json 实跑冻结"
                      "（比率全精度）；两个演示色块的颜色即冻结输出本身"))
-    o.append(srcnote(24, by + 102,
+    o.append(srcnote(24, by + 104,
                      "口径注（如实呈现，不合并）：palette/ensure 的 JSON 里 oklch 与 ratio 描述引擎内部双精度色，hex 是其 8 位量化——"))
-    o.append(srcnote(24, by + 118,
+    o.append(srcnote(24, by + 122,
                      "同一 #475c00 重新 convert 得 L 44.1177%（palette 侧 44.0272%）；ensure 报告 4.500000000000004，"
                      "输出 hex 复测 4.487789210548097（见指标图鉴）。验收要测落盘 hex"))
     return svg("p-complement", W, H, "".join(o),
@@ -532,21 +537,21 @@ def p_luminance(chain, insp, selfchecks):
     o.append(rect(px - 10, py - 26, pw + 20, ph + 66, fill="#FFFFFF",
                   stroke=RULE, sw=1, rx=6))
     o.append(text(px, py - 8, "gamma 解码曲线（sRGB 标准传递函数 · 41 点采样）",
-                  size=11.5, fill=INK, weight="600"))
+                  size=12, fill=INK, weight="600"))
     x0, y0 = px + 40, py + ph - 24
     sx, sy = pw - 60, ph - 44
     for gv in (0.0, 0.25, 0.5, 0.75, 1.0):
         gx = x0 + gv * sx
         if gv > 0.0:  # the curve leaves (x0,y0) along the v/12.92 segment —
             o.append(line(gx, y0, gx, y0 - sy, stroke=RULE, w=0.6))
-        o.append(mono(gx, y0 + 14, f"{gv:.2f}", size=8.5, fill=MUTED,
+        o.append(mono(gx, y0 + 15, f"{gv:.2f}", size=11, fill=MUTED,
                       anchor="middle"))
         gy_ = y0 - gv * sy
         # the gv=0 gridline starts past the curve's near-origin run, where
         # the v/12.92 segment hugs the axis (linter flags the tangency)
         gx0 = x0 + (30 if gv == 0.0 else 0)
         o.append(line(gx0, gy_, x0 + sx, gy_, stroke=RULE, w=0.6))
-        o.append(mono(x0 - 6, gy_ + 3, f"{gv:.2f}", size=8.5, fill=MUTED,
+        o.append(mono(x0 - 6, gy_ + 3, f"{gv:.2f}", size=11, fill=MUTED,
                       anchor="end"))
     pts = [(x0 + v / 40 * sx, y0 - srgb_to_linear(v / 40) * sy)
            for v in range(41)]
@@ -556,7 +561,7 @@ def p_luminance(chain, insp, selfchecks):
     o.append(line(x0 + seg_end * sx, y0, x0 + seg_end * sx, y0 - sy * 0.2,
                   stroke=WARN, w=1, dash="3 3"))
     o.append(text(x0 + seg_end * sx + 4, y0 - sy * 0.2 - 4,
-                  "v/12.92 线性段上限 0.04045", size=8.5, fill=WARN))
+                  "v/12.92 线性段上限 0.04045", size=12, fill=WARN))
     # the three channel points of rebeccapurple
     lin = chain["linear_rgb"]
     chans = [("R", 102 / 255, lin["r"]), ("G", 51 / 255, lin["g"]),
@@ -566,12 +571,13 @@ def p_luminance(chain, insp, selfchecks):
         o.append(line(gx, gy2, gx, y0, stroke=RULE, w=0.8, dash="2 3"))
         o.append(line(x0, gy2, gx, gy2, stroke=RULE, w=0.8, dash="2 3"))
         o.append(circle(gx, gy2, 4, "#663399", stroke=INK, sw=0.8))
-        o.append(text(gx + 7, gy2 - 5, name, size=9.5, fill=INK, weight="600"))
-    o.append(mono(x0, y0 + 30,
-                  "横轴 gamma 值 → 纵轴 linear 值（三圆点 = rebeccapurple 三通道）",
-                  size=9, fill=MUTED))
+        o.append(text(gx + 7, gy2 - 5, name, size=11, fill=INK, weight="600"))
+    o.append(mono(x0, y0 + 32,
+                  "横轴 gamma 值 → 纵轴 linear 值", size=12, fill=MUTED))
+    o.append(mono(x0, y0 + 48,
+                  "（三圆点 = rebeccapurple 三通道）", size=12, fill=MUTED))
     o.append(swatch(x0 + sx - 76, y0 - sy + 4, "#663399", w=14, h=14))
-    o.append(text(x0 + sx - 57, y0 - sy + 15, "样本色", size=9.5, fill=MUTED))
+    o.append(text(x0 + sx - 57, y0 - sy + 15, "样本色", size=12, fill=MUTED))
 
     # right: the chain with full precision
     cxx = 470
@@ -590,29 +596,31 @@ def p_luminance(chain, insp, selfchecks):
     yy = 56
     for i, (name, val, note) in enumerate(steps):
         o.append(rect(cxx, yy, 578, 62, fill=PAPER, stroke=RULE, sw=1, rx=6))
-        o.append(text(cxx + 14, yy + 20, name, size=11.5, fill=FLOW_DK,
+        o.append(text(cxx + 14, yy + 20, name, size=12, fill=FLOW_DK,
                       weight="600"))
         o.append(mono(cxx + 14, yy + 42, val, size=11, fill=INK,
                       weight="600"))
         o.append(text(cxx + 250 if len(val) > 22 else cxx + 190, yy + 40, note,
-                      size=9.5, fill=MUTED))
+                      size=12, fill=MUTED))
         if i < 3:
             o.append(connector(cxx + 289, yy + 62, cxx + 289, yy + 74))
         yy += 76
     # self-check chips (short labels; full names live in data/selfchecks.json)
     o.append(text(cxx, yy - 4, "复算自检（落盘前全部通过 · data/selfchecks.json）",
-                  size=11.5, fill=INK, weight="600"))
+                  size=12, fill=INK, weight="600"))
     short_labels = ["亮度复算", "黑底对比复算", "OKLab 链路复算"]
     cx2 = cxx
     for lab in short_labels:
-        cch, w = chip(cx2, yy + 12, f"✓ {lab}", size=9.5, mono_font=False)
+        cch, w = chip(cx2, yy + 12, f"✓ {lab}", size=12, mono_font=False,
+                      h=21)
         o.append(cch)
         cx2 += w + 8
-    o.append(text(cxx, yy + 44, "|Δ| < 1e-15，Python 复算 == 引擎全精度；"
-                  "对应自检条目 1 / 2 / 4", size=10, fill=MUTED))
-    o.append(srcnote(24, H - 14,
+    o.append(text(cxx, yy + 46, "|Δ| < 1e-15，Python 复算 == 引擎全精度；"
+                  "对应自检条目 1 / 2 / 4", size=12, fill=MUTED))
+    o.append(srcnote(24, H - 30,
                      "data/spaces-chain.json（linear 三元组与亮度由公式复算，锚定引擎全精度 relative_luminance 与 "
-                     "contrast_on_white；linear 显示 6 位小数，全精度在 JSON）· gamma 曲线 = 公式直接采样，非手画"))
+                     "contrast_on_white；linear 显示 6 位小数，全精度在 JSON）"))
+    o.append(srcnote(24, H - 14, "gamma 曲线 = 公式直接采样，非手画"))
     return svg("p-luminance", W, H, "".join(o))
 
 
@@ -620,7 +628,7 @@ def p_luminance(chain, insp, selfchecks):
 # 07 STORY 3 — WCAG threshold ladder with six measured points
 
 def p_contrast(ladder):
-    W, H = 1072, 518
+    W, H = 1072, 546
     o = []
     # threshold cards
     th = [("aa_large", "3.0", "大字号 / UI 组件"), ("aa_normal", "4.5", "正文"),
@@ -630,9 +638,9 @@ def p_contrast(ladder):
         o.append(rect(cx, 22, 246, 58, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
         o.append(mono(cx + 14, 44, f"{v}:1", size=16, fill=FLOW_DK,
                       weight="600"))
-        o.append(mono(cx + 74, 42, name, size=11, fill=INK))
-        o.append(text(cx + 74, 58, gloss, size=9.5, fill=MUTED))
-    o.append(srcnote(24, 96,
+        o.append(mono(cx + 74, 40, name, size=11, fill=INK))
+        o.append(text(cx + 74, 57, gloss, size=12, fill=MUTED))
+    o.append(srcnote(24, 98,
                      "四档阈值硬编码于评级逻辑 · CLI --target aa-large|aa|aaa-large|aaa 同值（声明 A-11，证据链见 VERIFICATION）"))
 
     # number line 1..14
@@ -649,12 +657,12 @@ def p_contrast(ladder):
     for r, lab in [(1.0, "1"), (3.0, "3.0"), (4.5, "4.5"), (7.0, "7.0"),
                    (10.0, "10"), (13.0, "13")]:
         o.append(line(X(r), ay, X(r), ay + 6, stroke=INK, w=1))
-        o.append(mono(X(r), ay + 20, lab, size=9.5, fill=MUTED, anchor="middle"))
+        o.append(mono(X(r), ay + 21, lab, size=11, fill=MUTED, anchor="middle"))
     for r, lab in [(3.0, "AA large"), (4.5, "AA normal / AAA large"),
                    (7.0, "AAA normal")]:
         o.append(line(X(r), ay - 4, X(r), ay - 150, stroke=WARN, w=1,
                       dash="4 3", opacity=0.8))
-        o.append(text(X(r) + 4, ay - 152, lab, size=9.5, fill=WARN))
+        o.append(text(X(r) + 4, ay - 152, lab, size=11, fill=WARN))
     # measured points
     pts = [
         ("互补对", "#663399", "#475c00",
@@ -676,58 +684,62 @@ def p_contrast(ladder):
         col = (TEAL if rating["aaa_normal"]
                else (FLOW_DK if rating["aa_large"] else WARN))
         o.append(circle(x, ay, 5.5, col, stroke="#FFFFFF", sw=1.4))
-        ly = ay - 34 - level * 46 if side == "above" else ay + 34 + level * 44
+        ly = (ay - 36 - level * 48 if side == "above"
+              else ay + 38 + level * 48)
         dx = 10 if side == "above" else -14
         # flip the label block to the left of the dot when it would run past
-        # the right canvas edge (longest label ≈ 180px incl. ratio string)
-        flip = x + dx + 30 + 185 > W - 24
+        # the right canvas edge (longest label ≈ 190px incl. ratio string)
+        flip = x + dx + 30 + 190 > W - 24
         o.append(line(x + (2 if side == "above" else -2),
                       ay + (-7 if side == "above" else 7),
                       x + (dx if not flip else (-10 if side == "above" else 12)),
-                      ly + (12 if side == "above" else -12),
+                      ly + (14 if side == "above" else -14),
                       stroke=RULE, w=0.8))
         if flip:
             o.append(swatch(x - 66, ly - 10, bg, w=11, h=11))
             o.append(swatch(x - 53, ly - 10, fg, w=11, h=11))
-            o.append(text(x - 38, ly, name, size=9.5, fill=INK, weight="600",
+            o.append(text(x - 38, ly, name, size=12, fill=INK, weight="600",
                           anchor="end"))
-            o.append(mono(x - 38, ly + 12, f"{fg}/{bg}", size=8, fill=MUTED,
+            o.append(mono(x - 38, ly + 14, f"{fg}/{bg}", size=11, fill=MUTED,
                           anchor="end"))
-            o.append(mono(x - 38, ly + 24, ratio_str(rating["ratio"]),
-                          size=9, fill=col, weight="600", anchor="end"))
+            o.append(mono(x - 38, ly + 28, ratio_str(rating["ratio"]),
+                          size=11, fill=col, weight="600", anchor="end"))
         else:
             o.append(swatch(x + dx, ly - 10, bg, w=11, h=11))
             o.append(swatch(x + dx + 13, ly - 10, fg, w=11, h=11))
-            o.append(text(x + dx + 30, ly, name, size=9.5, fill=INK,
+            o.append(text(x + dx + 30, ly, name, size=12, fill=INK,
                           weight="600"))
-            o.append(mono(x + dx + 30, ly + 12, f"{fg}/{bg}", size=8,
+            o.append(mono(x + dx + 30, ly + 14, f"{fg}/{bg}", size=11,
                           fill=MUTED))
-            o.append(mono(x + dx + 30, ly + 24, ratio_str(rating["ratio"]),
-                          size=9, fill=col, weight="600"))
+            o.append(mono(x + dx + 30, ly + 28, ratio_str(rating["ratio"]),
+                          size=11, fill=col, weight="600"))
 
     # honesty cards: unreachable + alpha refusal (real stderr)
-    cy0 = 424
-    o.append(rect(24, cy0, 502, 62, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
-    o.append(mono(38, cy0 + 20, "chromap contrast ensure '#333333' '#555555' \\",
-                  size=10, fill=INK))
-    o.append(mono(38, cy0 + 35, "  --minimum 21   → exit 2", size=10, fill=INK))
+    cy0 = 428
+    o.append(rect(24, cy0, 502, 78, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
+    o.append(mono(38, cy0 + 18, "chromap contrast ensure '#333333' '#555555' \\",
+                  size=11, fill=INK))
+    o.append(mono(38, cy0 + 33, "  --minimum 21   → exit 2", size=11, fill=INK))
     o.append(text(38, cy0 + 52,
-                  "「contrast target 21:1 is unreachable; best available ratio is 7.455177810447525:1」",
-                  size=9.5, fill=WARN))
-    o.append(rect(546, cy0, 502, 62, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
-    o.append(mono(560, cy0 + 20,
+                  "「contrast target 21:1 is unreachable;",
+                  size=12, fill=WARN))
+    o.append(text(38, cy0 + 68,
+                  "best available ratio is 7.455177810447525:1」",
+                  size=12, fill=WARN))
+    o.append(rect(546, cy0, 502, 78, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
+    o.append(mono(560, cy0 + 18,
                   "contrast ratio '#66339980' '#ffffff'  → exit 2",
-                  size=10, fill=INK))
-    o.append(text(560, cy0 + 37,
+                  size=11, fill=INK))
+    o.append(text(560, cy0 + 38,
                   "「transparent colors require an explicit opaque canvas …」",
-                  size=9.5, fill=WARN))
-    o.append(text(560, cy0 + 54,
+                  size=12, fill=WARN))
+    o.append(text(560, cy0 + 60,
                   "alpha 颜色必须先给 --canvas 再谈对比度（诚实拒绝，不猜）",
-                  size=9.5, fill=MUTED))
-    o.append(srcnote(24, H - 8,
+                  size=12, fill=MUTED))
+    o.append(srcnote(24, H - 24,
                      "六个实测点 = data/contrast-ladder.json（每点一次引擎运行，比率全精度）· "
                      "错误路径原文 = data/exits.json · 目标值域 1.0..=21.0，越界即诚实拒绝（声明 A-12）"))
-    o.append(srcnote(24, H - 24,
+    o.append(srcnote(24, H - 8,
                      "「修复后前景」复测 4.487789210548097 < 4.5：ensure 自报 4.500000000000004 属其内部双精度候选，"
                      "8 位量化后差 0.012（两数均如实冻结，口径注见机制面板）"))
     return svg("p-contrast", W, H, "".join(o))
@@ -761,16 +773,16 @@ def p_distance(dist):
                       fill=INK, weight="600"))
         o.append(mono(cx + 100, 114, f"ΔsRGB  {repr(d['srgb'])}", size=11,
                       fill=INK, weight="600"))
-        o.append(text(cx + 16, 134, gloss, size=10, fill=MUTED))
-        o.append(mono(cx + 330, 134, closed, size=9.5, fill=TEAL))
+        o.append(text(cx + 16, 134, gloss, size=12, fill=MUTED))
+        o.append(mono(cx + 330, 134, closed, size=12, fill=TEAL))
 
     # table: all four frozen pairs
     cols = [24, 190, 420, 690]
     hy = 190
-    o.append(text(cols[0], hy, "实测对", size=10.5, fill=MUTED, weight="600"))
-    o.append(text(cols[1], hy, "ΔE_ok（OKLab 欧氏）", size=10.5, fill=MUTED,
+    o.append(text(cols[0], hy, "实测对", size=12, fill=MUTED, weight="600"))
+    o.append(text(cols[1], hy, "ΔE_ok（OKLab 欧氏）", size=12, fill=MUTED,
                   weight="600"))
-    o.append(text(cols[3], hy, "ΔsRGB（gamma 域欧氏）", size=10.5, fill=MUTED,
+    o.append(text(cols[3], hy, "ΔsRGB（gamma 域欧氏）", size=12, fill=MUTED,
                   weight="600"))
     rows = [
         ("#ff0000 / #00ff00", "red_green", "√2"),
@@ -781,20 +793,20 @@ def p_distance(dist):
     y = hy + 14
     for label, key, note in rows:
         o.append(line(24, y, 1048, y, stroke=RULE, w=0.8))
-        o.append(mono(cols[0], y + 18, label, size=10.5, fill=INK))
-        o.append(mono(cols[1], y + 18, repr(dist[key]["oklab"]), size=10.5,
+        o.append(mono(cols[0], y + 18, label, size=11, fill=INK))
+        o.append(mono(cols[1], y + 18, repr(dist[key]["oklab"]), size=11,
                       fill=FLOW_DK))
-        o.append(mono(cols[3], y + 18, repr(dist[key]["srgb"]), size=10.5,
+        o.append(mono(cols[3], y + 18, repr(dist[key]["srgb"]), size=11,
                       fill=FLOW_DK))
-        o.append(text(cols[3] + 190, y + 18, note, size=9.5, fill=MUTED))
+        o.append(text(cols[3] + 190, y + 18, note, size=12, fill=MUTED))
         y += 27
     o.append(line(24, y, 1048, y, stroke=INK, w=1.1))
     o.append(text(24, y + 20,
                   "两个度量单位不同、尺度不同，绝对值不可直接比大小：ΔsRGB 的最大值是 √3（黑↔白），",
-                  size=10.5, fill=INK))
-    o.append(text(24, y + 37,
+                  size=12, fill=INK))
+    o.append(text(24, y + 38,
                   "ΔE_ok 全空间约 [0,1]；OKLab 的设计目标是感知均匀（通解一句带过，本页不展开，"
-                  "详见 color-palette-rs 图解）", size=10.5, fill=INK))
+                  "详见 color-palette-rs 图解）", size=12, fill=INK))
     o.append(srcnote(24, H - 10,
                      "data/distance.json（chromap --json distance 逐对实跑，全精度）· "
                      "双口径同时输出（声明 A-16）· √2 / √3 / 亮度轴三组闭式复算见 data/selfchecks.json"))
@@ -816,52 +828,52 @@ def p_kinds(pals, fmts):
     lx = 24
     o = []
     o.append(text(lx, 30, "palette -k <kind>（基色 #4f7cff = 库例程内置品牌色，声明 A-21；默认 -c 7）",
-                  size=11.5, fill=INK, weight="600"))
-    o.append(text(lx + 150, 46, "① 标尺类：-c / --lightness-span / --hue-span 生效",
-                  size=9.5, fill=FLOW_DK))
-    y = 58
+                  size=12, fill=INK, weight="600"))
+    o.append(text(lx + 150, 47, "① 标尺类：-c / --lightness-span / --hue-span 生效",
+                  size=12, fill=FLOW_DK))
+    y = 60
     for kind in scale_kinds:
         hexes = kinds[kind]
-        o.append(mono(lx, y + 12, kind, size=10.5, fill=INK))
+        o.append(mono(lx, y + 12, kind, size=11, fill=INK))
         for i, hv in enumerate(hexes):
             o.append(swatch(lx + 150 + i * 32, y, hv, w=30, h=16))
         o.append(mono(lx + 150 + 7 * 32 + 8, y + 12, f"×{len(hexes)}",
-                      size=9.5, fill=MUTED))
+                      size=11, fill=MUTED))
         y += 27
-    o.append(text(lx + 150, y + 4,
+    o.append(text(lx + 150, y + 5,
                   "② 和谐类：长度由色相关系固定（偏移表见声明 A-14），-c 不生效",
-                  size=9.5, fill=FLOW_DK))
-    y += 16
+                  size=12, fill=FLOW_DK))
+    y += 17
     for kind, offsets in harmony_offsets.items():
         hexes = kinds[kind]
-        o.append(mono(lx, y + 12, kind, size=10.5, fill=INK))
+        o.append(mono(lx, y + 12, kind, size=11, fill=INK))
         for i, hv in enumerate(hexes):
             o.append(swatch(lx + 150 + i * 32, y, hv, w=30, h=16))
-        o.append(mono(lx + 150 + 4 * 32 + 8, y + 12, offsets, size=9,
+        o.append(mono(lx + 150 + 4 * 32 + 8, y + 12, offsets, size=11,
                       fill=MUTED))
         y += 27
 
     # right column: 7 output formats
     rx = 700
-    n_fmt_rows = sum(2 if len(v) > 24 else 1 for v in fmts.values())
-    o.append(rect(rx, 42, 348, 96 + n_fmt_rows * 22, fill="#FFFFFF",
+    n_fmt_rows = sum(26 if len(v) > 24 else 22 for v in fmts.values())
+    o.append(rect(rx, 42, 348, 70 + n_fmt_rows, fill="#FFFFFF",
                   stroke=RULE, sw=1.1, rx=6))
-    o.append(text(rx + 14, 64, "7 种输出格式（--format）", size=11.5, fill=INK,
+    o.append(text(rx + 14, 64, "7 种输出格式（--format）", size=12, fill=INK,
                   weight="600"))
-    o.append(swatch(rx + 14, 72, "#663399", w=13, h=13))
-    o.append(text(rx + 32, 83, "同一颜色 rebeccapurple：", size=9.5, fill=MUTED))
-    yy = 102
+    o.append(swatch(rx + 14, 74, "#663399", w=13, h=13))
+    o.append(text(rx + 32, 85, "同一颜色 rebeccapurple：", size=12, fill=MUTED))
+    yy = 106
     for f in ["hex", "rgb", "hsl", "hsv", "cmyk", "oklab", "oklch"]:
-        o.append(mono(rx + 14, yy, f, size=10, fill=FLOW_DK))
+        o.append(mono(rx + 14, yy, f, size=11, fill=FLOW_DK))
         val = fmts[f]
         if len(val) > 24:
             cut = val.index(" ", val.index(" ") + 1)
-            o.append(mono(rx + 62, yy, val[:cut], size=9.5, fill=INK))
-            o.append(mono(rx + 62, yy + 11, val[cut + 1:], size=9.5, fill=INK))
-            yy += 24
+            o.append(mono(rx + 62, yy, val[:cut], size=11, fill=INK))
+            o.append(mono(rx + 62, yy + 13, val[cut + 1:], size=11, fill=INK))
+            yy += 26
         else:
-            o.append(mono(rx + 62, yy, val, size=10, fill=INK))
-            yy += 20
+            o.append(mono(rx + 62, yy, val, size=11, fill=INK))
+            yy += 22
 
     # footer facts
     fy = y + 16
@@ -869,12 +881,12 @@ def p_kinds(pals, fmts):
     o.append(text(lx, fy + 20,
                   f"实测：和谐类 -c {pals['harmony_ignores_count']['requested_count']} 仍返回 "
                   f"{pals['harmony_ignores_count']['returned']} 色（complementary）——"
-                  "标尺与和谐是两组生成器", size=10.5, fill=INK))
+                  "标尺与和谐是两组生成器", size=12, fill=INK))
     o.append(text(lx, fy + 38,
                   "标尺类共享「固定 L/C 扫 H 或固定 H/C 扫 L」骨架；golden 用 137.50776405003785° 黄金角错开色相（声明 A-15）",
-                  size=10.5, fill=MUTED))
-    H = fy + 62
-    o.append(srcnote(lx, fy + 58,
+                  size=12, fill=MUTED))
+    H = fy + 66
+    o.append(srcnote(lx, fy + 60,
                      "data/palettes.json（14 次 chromap --json palette #4f7cff -k <kind> 实跑）· "
                      "data/formats.json（7 种格式逐一 convert 冻结）"))
     return svg("p-kinds", W := 1072, H, "".join(o))
@@ -899,9 +911,9 @@ def p_tokens(tok, png):
     for i, (t, cmd, note) in enumerate(steps):
         w = 244
         o.append(rect(sx, 22, w, 66, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
-        o.append(text(sx + 12, 42, t, size=11.5, fill=FLOW_DK, weight="600"))
-        o.append(mono(sx + 12, 60, cmd, size=10, fill=INK))
-        o.append(text(sx + 12, 76, note, size=9.5, fill=MUTED))
+        o.append(text(sx + 12, 42, t, size=12, fill=FLOW_DK, weight="600"))
+        o.append(mono(sx + 12, 60, cmd, size=11, fill=INK))
+        o.append(text(sx + 12, 78, note, size=12, fill=MUTED))
         if i < 3:
             o.append(connector(sx + w, 55, sx + w + 18, 55))
         sx += w + 18
@@ -926,49 +938,49 @@ def p_tokens(tok, png):
         # label color chosen by measurement, not by hand: white text only
         # where white-on-this-swatch itself passes AA normal
         col = "#ffffff" if ok else "#17212B"
-        o.append(mono(cx + 8, 156, hv, size=9.5, fill=col))
-        o.append(mono(cx + 8, 170, css_pairs[i][0], size=8.5, fill=col))
+        o.append(mono(cx + 8, 156, hv, size=11, fill=col))
+        o.append(mono(cx + 8, 171, css_pairs[i][0], size=11, fill=col))
         o.append(mono(cx + 8, 216, f"{rating['ratio']:.2f}", size=11,
                       fill=TEAL if ok else WARN, weight="600"))
-        o.append(text(cx + 8, 230, "AA ✓" if ok else "AA ✗", size=9.5,
+        o.append(text(cx + 8, 231, "AA ✓" if ok else "AA ✗", size=11,
                       fill=TEAL if ok else WARN))
     o.append(text(24, 252,
                   "注：各级过/不过 AA 是实测结果（data/design-tokens.json，9 次 ratio 运行，显示 2 位小数、"
-                  "全精度在 JSON）——深级当正文、浅级当底色才成立", size=10, fill=MUTED))
+                  "全精度在 JSON）——深级当正文、浅级当底色才成立", size=12, fill=MUTED))
 
     # CSS block (two columns to fit)
-    o.append(rect(24, 270, 560, 152, fill=CODE_BG, rx=6))
-    o.append(mono(40, 292, "chromap palette '#4f7cff' -k neighbors -c 9 \\",
-                  size=10, fill=INK))
-    o.append(mono(40, 307, "  --lightness-span 0.64 --css-prefix brand",
-                  size=10, fill=INK))
+    o.append(rect(24, 270, 560, 176, fill=CODE_BG, rx=6))
+    o.append(mono(40, 294, "chromap palette '#4f7cff' -k neighbors -c 9 \\",
+                  size=11, fill=INK))
+    o.append(mono(40, 310, "  --lightness-span 0.64 --css-prefix brand",
+                  size=11, fill=INK))
     css_lines = tok["css"].splitlines()  # ":root {" + 9 vars + "}"
-    yy = 330
+    yy = 334
     for j, ln in enumerate(css_lines):
         col_x = 40 if j < 6 else 320
         row = j if j < 6 else j - 6
-        o.append(mono(col_x, yy + row * 15, ln, size=10, fill=FLOW_DK))
-    o.append(text(40, 418, "（--css-prefix 校验 ASCII 字母/数字/-/_，输出可直接入 CSS）",
-                  size=9, fill=MUTED))
+        o.append(mono(col_x, yy + row * 16, ln, size=11, fill=FLOW_DK))
+    o.append(text(40, 430, "（--css-prefix 校验 ASCII 字母/数字/-/_，输出可直接入 CSS）",
+                  size=12, fill=MUTED))
 
     # right: equivalence + PNG freeze
-    o.append(rect(608, 270, 440, 152, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
-    o.append(text(624, 292, "与库例程对拍：9 级 hex 全等（9/9）", size=11.5,
+    o.append(rect(608, 270, 440, 176, fill="#FFFFFF", stroke=RULE, sw=1.1, rx=6))
+    o.append(text(624, 294, "与库例程对拍：9 级 hex 全等（9/9）", size=12,
                   fill=INK, weight="600"))
-    o.append(mono(624, 310, "cargo run --package chromap \\", size=10, fill=MUTED))
-    o.append(mono(624, 325, "  --example design_tokens", size=10, fill=MUTED))
-    o.append(text(624, 345, "自检 #17：例程输出的 9 个 hex 与 CLI 标尺逐一相等",
-                  size=9.5, fill=INK))
-    o.append(text(624, 360, "命名口径不同：CLI --css-prefix 给 --brand-1…9",
-                  size=9.5, fill=INK))
-    o.append(text(624, 375, "（声明 A-20）；例程自带 --brand-100…900",
-                  size=9.5, fill=INK))
-    o.append(text(624, 390, "（内置命名）——两个口径都如实呈现",
-                  size=9.5, fill=INK))
-    o.append(mono(624, 408, f"PNG 预览 {png['width']}×{png['height']}"
-                  f"（{png['geometry'][:12]}…）", size=9.5, fill=INK))
-    o.append(mono(624, 421,
-                  f"双跑 sha256 一致：{png['run1_sha256'][:26]}…", size=9,
+    o.append(mono(624, 314, "cargo run --package chromap \\", size=11, fill=MUTED))
+    o.append(mono(624, 330, "  --example design_tokens", size=11, fill=MUTED))
+    o.append(text(624, 352, "自检 #17：例程输出的 9 个 hex 与 CLI 标尺逐一相等",
+                  size=12, fill=INK))
+    o.append(text(624, 370, "命名口径不同：CLI --css-prefix 给 --brand-1…9",
+                  size=12, fill=INK))
+    o.append(text(624, 388, "（声明 A-20）；例程自带 --brand-100…900",
+                  size=12, fill=INK))
+    o.append(text(624, 406, "（内置命名）——两个口径都如实呈现",
+                  size=12, fill=INK))
+    o.append(mono(624, 426, f"PNG 预览 {png['width']}×{png['height']}"
+                  f"（{png['geometry'][:12]}…）", size=12, fill=INK))
+    o.append(mono(624, 441,
+                  f"双跑 sha256 一致：{png['run1_sha256'][:26]}…", size=12,
                   fill=TEAL))
     o.append(srcnote(24, H - 14,
                      "data/design-tokens.json（palette + 9×ratio + 库例程对拍）· "
@@ -996,7 +1008,7 @@ def p_evidence(prov, engine, selfchecks, n_panels=11):
     nx, nw = 24, 186
     x = nx
     for i, (t, subs) in enumerate(nodes):
-        o.append(node(x, ny, nw, nh, t, subs, tsize=11.5, ssize=9.5))
+        o.append(node(x, ny, nw, nh, t, subs, tsize=12, ssize=12))
         if i < 4:
             o.append(connector(x + nw, ny + nh / 2, x + nw + 18, ny + nh / 2))
         x += nw + 18
@@ -1014,22 +1026,22 @@ def p_evidence(prov, engine, selfchecks, n_panels=11):
         cx = 24 + i * 202
         o.append(rect(cx, ky, 190, 52, fill="#FFFFFF", stroke=RULE, sw=1, rx=6))
         o.append(mono(cx + 14, ky + 30, n, size=18, fill=FLOW_DK, weight="600"))
-        o.append(text(cx + 14, ky + 45, l, size=9.5, fill=MUTED))
+        o.append(text(cx + 14, ky + 45, l, size=12, fill=MUTED))
 
     # selected self-checks
     o.append(text(24, 228, "自检选录（全部 21 条见 data/selfchecks.json）",
                   size=12, fill=INK, weight="600"))
     sel = ["relative_luminance", "√2", "√3", "互补色", "ensure", "PNG"]
-    y = 248
+    y = 250
     for c in selfchecks["checks"]:
         if any(s in c["check"] for s in sel):
             detail = c["detail"]
-            if len(detail) > 43:  # keep inside the right canvas edge; full
-                detail = detail[:42] + "…"  # text lives in data/selfchecks.json
-            o.append(mono(24, y, "PASS", size=10, fill=TEAL, weight="600"))
-            o.append(text(66, y, c["check"], size=10, fill=INK))
-            o.append(mono(820, y, detail, size=9, fill=MUTED))
-            y += 19
+            if len(detail) > 31:  # keep inside the right canvas edge; full
+                detail = detail[:30] + "…"  # text lives in data/selfchecks.json
+            o.append(mono(24, y, "PASS", size=11, fill=TEAL, weight="600"))
+            o.append(text(66, y, c["check"], size=12, fill=INK))
+            o.append(mono(820, y, detail, size=11, fill=MUTED))
+            y += 21
     o.append(srcnote(24, H - 12,
                      "重建命令与验收管线见 README / VERIFICATION；页面与 SVG 可 byte-identical 重建"))
     return svg("p-evidence", W, H, "".join(o))

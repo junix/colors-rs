@@ -9,7 +9,7 @@
 | 检查 | 结果 |
 | --- | --- |
 | svg-linter 结构门禁（11 个 SVG，逐文件） | **0 findings**（错误级与警告级均为 0；无需 line-overlap 逐项判定） |
-| 渲染断言 | 位图 2400×17886 = 页面 CSS 1200×8943 × dpr 2，`stitch.py` 内建断言通过（~~2400×17776 = 1200×8888 × 2~~【2026-09-03 改版后页面高度 8888→8943，见 §9】） |
+| 渲染断言 | 位图 2400×17968 = 页面 CSS 1200×8984 × dpr 2，`stitch.py` 内建断言通过（~~2400×17776 = 1200×8888 × 2~~【2026-09-03 改版后页面高度 8888→8943，见 §9】~~；~~2400×17886 = 1200×8943 × 2~~【2026-09-06 字号下限改版后 8943→8984，见 §10】） |
 | 渲染确定性 | 两次独立浏览器会话渲染 sha256 完全一致（§2.3） |
 | index.html 重建 | `python3 build.py` 重建后 `cmp` byte-identical（§5） |
 | 页面自包含 | 零 `<script>`、零 CDN、零外部请求（§4） |
@@ -17,6 +17,7 @@
 | 目检 | 11 面板全尺寸 + 页眉页脚裁片 + 灰度 + 缩略（§6） |
 | 第二轮修复（2026-09-02） | 独立对抗验证 14 条 findings 修净、0 推翻；门禁/渲染/重建全链路重跑通过（§3.6 修正 8-16、§8 迁移链） |
 | 第三轮改版（2026-09-03） | **代码细节下页**：file:line / 引擎文件名 / 行区间 / 逐字源码引文 / 标识符全部撤离页面，锚点与引文改冻结于本文件（声明编号 A-xx，§9）；build 新增 code_detail_gate 六式拦零（§9.4）；门禁/渲染/双跑重建全链路重跑通过 |
+| 第四轮改版（2026-09-06 refine） | **SVG 字号下限**：全部 SVG 文字 ≥ 11 px、含中文串 ≥ 12 px（538 处 <11 px 从 76.0% 清零；中文最小 8.5→12 px）；门禁 / 双跑重建 / 两会话渲染确定性全链路重跑通过（§10） |
 
 ## 1. 证据冻结（provenance）
 
@@ -72,7 +73,8 @@ python3 stitch.py
   目标 y（误差 ≤1px，否则报错退出）。
 - stitch.py：**只按切片顺序拼接**（逐 section 拼接会丢段间距，属明令禁止项），
   并断言 `位图高 == cssHeight × dpr`：~~当前 `2400×17776 == 1200×8888 × 2`~~
-  【2026-09-03 改版后：`2400×17886 == 1200×8943 × 2`，两轮渲染均断言通过】。
+  【2026-09-03 改版后：~~`2400×17886 == 1200×8943 × 2`~~；2026-09-06 字号下限改版后：
+  `2400×17968 == 1200×8984 × 2`，两轮渲染均断言通过】。
 
 ### 2.3 渲染确定性
 
@@ -83,6 +85,9 @@ run1 db4b6539c4cc973556de68091c24ee6ef02b4192d0a1a2e88c6a33503b31cc1a
 run2 db4b6539c4cc973556de68091c24ee6ef02b4192d0a1a2e88c6a33503b31cc1a
 deterministic: true
 ```
+
+~~上述哈希为 2026-09-02 轮快照~~【后续各轮重跑后以 `evidence/render-determinism.txt`
+当前内容为准；2026-09-06 字号下限改版后为两跑 `be5515f0…` 一致、3/3 切片 cmp】。
 
 复现（两个独立浏览器会话的真对比——run1 整目录挪走后重渲染，逐文件对照；
 ~~旧复现命令渲染到 /tmp 却哈希 render/ 旧产物，不构成对比~~【后证不实，本轮
@@ -285,17 +290,19 @@ grep -E "https?://" index.html | grep -cv xmlns  # 0（xmlns 为内联 SVG 命�
 cp index.html /tmp/index.before.html
 python3 build.py >/dev/null
 cmp /tmp/index.before.html index.html && echo byte-identical
-# index.html sha256 ~~6236ccbb…~~【2026-09-03 改版后 010ded5273b0babad67ec02b793b479f663ee17ef145d955a0377e3166d47231，
-#                          迁移链见 §8/§9；build 结束时 code_detail_gate 全 PASS】
+# index.html sha256 ~~6236ccbb…~~【2026-09-03 改版后 ~~010ded5273b0babad67ec02b793b479f663ee17ef145d955a0377e3166d47231~~；
+#                          2026-09-06 字号下限改版后 55d7c0b28c778f98e1f5b9a90e9ba8829dc669230358ce3f7744f72c06b0fc23，
+#                          迁移链见 §8/§9/§10；build 结束时 code_detail_gate 全 PASS】
 ```
 
 build.py 无时间戳、无绝对路径、无随机序；数据不变则产物不变。
 交付位图指纹（`shasum -a 256`；~~2026-09-02 锚点修正重建后的值~~
-【2026-09-03 改版重建后更新如下，旧值与迁移原因见 §8】）：
+【~~2026-09-03 改版重建后更新如下~~ → 2026-09-06 字号下限改版后更新如下，
+旧值与迁移原因见 §8/§10】）：
 
 ```
-chromap-explainer@2x.png        e156887abdde6da7ac2ed61a0fd1c5733a58781b9d5c654bafcc7bfcf7497fdf
-chromap-explainer-thumb.png     07ccddac7b998cbc5428b70f55b978a0e4ab0ad9da19b05f6df2cfebcd507776
+chromap-explainer@2x.png        be5515f01089e3e4911f32578d306a619a5a872cc390ebf6cfc136a5e09588e3
+chromap-explainer-thumb.png     0756d36c0e8069239e294f3885538d82749a76cdf374c1ba4ba398e4d48b7373
 ```
 
 ## 6. 目检记录（全部基于断言过的 1:1 渲染）
@@ -326,6 +333,15 @@ chromap-explainer-thumb.png     07ccddac7b998cbc5428b70f55b978a0e4ab0ad9da19b05f
   23 行 × 锚点 A-xx、prov 块、colophon）、灰度裁片（9 级标尺 + CSS 块区域，
   同逻辑位置随页面 +55px 平移）、缩略 600×4471——未见压字、越界、断词；
   页面高度 8888 → 8943 CSS px（页脚来源表 22→23 行）。
+- **第四轮目检（2026-09-06，字号下限改版后）**：11 面板 @2x 逐面板复核（重点重排面：
+  p-cli 三分组卡（度量列加宽 312→348、合成列 300→330）、p-spaces 右簇卡（716 起 332 宽、
+  gloss 改两行式，传递函数公式 11 px 收边）、p-complement 左卡三行结论（卡高 268→288）、
+  p-contrast 数轴标签 12 px 三行块与诚实卡加高（62→78，stderr 长引文拆两行）、
+  p-kinds 右侧格式卡重排、p-tokens CSS/右卡加高（152→176）、p-evidence 自检明细列
+  截断 42→30 字符）、页眉/页脚裁片、灰度裁片（9 级标尺 + CSS 块区域，随面板平移至
+  device y 13602..13922）、缩略 600×4492——未见压字、越界、断词；全部 8 个受影响
+  面板的 1× 目检复扫 0 缺陷（p-spaces 传递函数公式行在 12 px 下一度溢出卡缘，
+  目检捕获后按「无中文即 11 px」规则回收到卡内，重建后复扫干净，见 §10）。
 
 ## 7. 边界与未声明事项（防过度解读）
 
@@ -370,6 +386,20 @@ chromap-explainer-thumb.png     07ccddac7b998cbc5428b70f55b978a0e4ab0ad9da19b05f
 0 findings，与 09-02 轮逐字节相同——规则结论集未变）、
 `render-determinism.txt`（两跑 e156887a… 一致、3/3 切片 cmp）、
 `gray-proof.png`（同逻辑区域随页面 +55px 平移：device y 13494..13814）。
+
+### 2026-09-06 第四轮（SVG 字号下限改版，§10）后全量重建，此前指纹再次作废：
+
+| 产物 | 旧 sha256（09-03 轮） | 新 sha256（09-06 轮） | 原因（一行） |
+| --- | --- | --- | --- |
+| index.html | 010ded5273b0babad67ec02b793b479f663ee17ef145d955a0377e3166d47231 | 55d7c0b28c778f98e1f5b9a90e9ba8829dc669230358ce3f7744f72c06b0fc23 | 全部 SVG 文字 ≥11 px、中文 ≥12 px；CSS fignote/colophon 11/11.5→12 px；轮内中间值 636aeba3… 作废（p-spaces 公式溢出回收，§10） |
+| chromap-explainer@2x.png | e156887abdde6da7ac2ed61a0fd1c5733a58781b9d5c654bafcc7bfcf7497fdf | be5515f01089e3e4911f32578d306a619a5a872cc390ebf6cfc136a5e09588e3 | index.html 变更后重渲染；页面 8943→8984 CSS px（轮内中间值 47fb8493… 作废） |
+| chromap-explainer-thumb.png | 07ccddac7b998cbc5428b70f55b978a0e4ab0ad9da19b05f6df2cfebcd507776 | 0756d36c0e8069239e294f3885538d82749a76cdf374c1ba4ba398e4d48b7373 | 同上（600×4492） |
+| svg/ 11 个 | （09-03 轮值见上文） | 全部更新（p-hero 43d1dc14… · p-cli a9f5287c… · p-parse 0bad711a… · p-spaces b187c352… · p-complement fe581249… · p-luminance 15499961… · p-contrast a008d74b… · p-distance 7cb3a324… · p-kinds 6893d533… · p-tokens 415c435d… · p-evidence efb1b16e…） | 各面板字号抬升与随行几何重排（逐面板明细见 §10.2） |
+| data/ 20 个 | — | **未变** | 本轮只动排版层；data/*.json 与 prep_data.py 冻结不动 |
+
+`evidence/` 三个冻结快照同轮按原命令重跑刷新：`gate.txt`（11×exit=0、0 findings）、
+`render-determinism.txt`（两跑 be5515f0… 一致、3/3 切片 cmp）、
+`gray-proof.png`（同逻辑区域随面板平移：device y 13602..13922）。
 
 ## 9. 代码细节下页改版（2026-09-03，政策：页面零代码细节）
 
@@ -497,3 +527,70 @@ Python 数学记法（`1.4142… vs sqrt(2)=…`，data/selfchecks.json 冻结�
   已带 `PYTHONDONTWRITEBYTECODE=1`、无字节码落盘；事后在 /tmp 以相同命令
   重做并 `cmp` 逐字节等价，交付树 `__pycache__` 计数为 0。其余全部 python
   （build/stitch/裁片）均在 /tmp 平面拷贝执行。
+
+## 10. 2026-09-06 refine（SVG 字号下限改版）
+
+survey 判定两项 high 缺陷：`svg-text-small`（538 处 SVG 文字中 76.0% 低于 11 px，
+仅 24% 达标，对比 ≥90% 规则）与 `cjk-small`（中文串最小 8.5 px，违反中文 ≥12 px
+底线）。本轮在生成器层整体抬字重排，冻结证据零改动。
+
+### 10.1 改版口径
+
+- 字号双底线：**全部 SVG 文字 ≥ 11 px；含中文（含全角标点）的串 ≥ 12 px**。
+  纯 ASCII 长串（命令、hex、全精度数值、公式）用 11 px；中文一律 12 px。
+  改版后普查（对 index.html 内联 SVG 逐 `<text>` 解析）：542 处文字 100% ≥ 11 px，
+  中文 203 串 100% ≥ 12 px，中文最小 8.5 → **12.0 px**。
+- HTML 侧同步：figcaption.fignote 11.5→12 px、.colophon 11→12 px（CSS-only，
+  其余 HTML 字号本已 ≥12 px）。
+- 原则：**抬字号 + 重排几何，不缩内容**——所有数字、引文、口径注逐字保留；
+  仅三处长句按原字符换行拆行（p-complement 左卡结论两行拆三行、p-luminance
+  横纵轴说明拆两行、p-contrast 诚实卡 unreachable stderr 引文按分号拆两行）。
+
+### 10.2 逐面板几何重排（字号抬升的随行修正，非装饰性改动）
+
+- **p-hero**：七空间卡 >22 字符值改按第一空格折行（11 px 两行）；提示卡
+  （七种表示）加高 52→58；度量卡 218→222 宽（容纳 11 px 公式行）；身份卡
+  中英混排行 11/12 px。
+- **p-cli**：三分组卡重排——度量组 312→348、合成组 300→330（12 px 注记列内收
+  gx+124），节点高 62→64，边标「字符串/双精度×4」12 px。
+- **p-parse**：表头/族名/分组注/归属列 12 px，样本与 hex 11 px；行距不变。
+- **p-spaces**：核心盒 212→232 宽；右簇三卡 728→716 起、320→332 宽；左簇 gloss
+  从值行右侧改排在值行下方（12 px 不再与 11 px 长值共线）；传递函数公式行
+  按无中文规则取 11 px（12 px 时溢出卡缘，目检捕获后回收，见 §6）。
+- **p-complement**：三卡 268→288 高；底部双节点下移 384→398；三条口径注
+  12 px 行距 18。
+- **p-luminance**：曲线轴刻度 8.5→11 px；步骤卡名 12 px、注记 12 px；
+  自检芯片 9.5→12 px（高 17→21）；脚注拆两行。
+- **p-contrast**：数轴标签三行块 12/11 px（引线端点随行距 14/28 调整），
+  下方标签层间距 44→48；诚实卡 62→78 高（长引文拆行）；面板高 518→546。
+- **p-distance / p-kinds / p-tokens / p-evidence**：同口径抬字；p-kinds 右侧
+  格式卡重排（两行值行距 11→13、行进 24→26，卡高公式随之）；p-tokens CSS 块与
+  右卡 152→176 高；p-evidence 自检明细列截断 42→30 字符（11 px 下右缘内收）。
+
+### 10.3 门禁与渲染全链路重跑结果
+
+| 检查 | 结果 |
+| --- | --- |
+| code_detail_gate（build 内建，12 产物 × 6 式） | **0 violations** |
+| svg-linter（11 个 SVG 逐文件） | **11×exit=0，findings=0**（含警告级；输出冻结于 evidence/gate.txt） |
+| build 双跑重建 | index.html 与 svg/ 11 文件 **byte-identical**（cmp） |
+| 页面自包含 | `<script>` 计数 0；非 xmlns 外链 0 |
+| 字号普查（本轮新增检查） | 542 处 100% ≥11 px；中文 203 串 100% ≥12 px（改版前 76.0% / 最低 8.5 px） |
+| 断言渲染 | 位图 2400×17968 == 1200×8984 × dpr 2，stitch 断言两轮通过 |
+| 渲染确定性（两会话真对比） | run1 == run2 sha256 `be5515f0…`，3/3 切片与 11 面板裁片 cmp 全等（evidence/render-determinism.txt） |
+| 目检 | 8 个重排面板 1× 复扫 0 缺陷；灰度裁片可读（device y 13602..13922）；缩略 600×4492 |
+| 页高 | 8943 → 8984 CSS px（F2 上限 18000 内） |
+
+### 10.4 指纹迁移
+
+本轮全部产物指纹作废并迁移，旧值/中间值/新值与原因见 §8 末表；data/ 20 个
+冻结 JSON 逐字节未动。
+
+### 10.5 未实施（本轮明确不做，留待后续轮次）
+
+- `no-sidenote-track`（med）：正文右侧 sidenote 栏未加——属版式重构，超出本轮
+  「修缺陷不扩面」范围。
+- `no-poison`（med）：code_detail_gate 六式仍无正面对照（毒丸）运行记录——
+  门禁自证属独立工作项。
+- 渲染后两轮电池（vacuum / post-commit 链）未运行：按 refine 规程只跑廉价门禁；
+  post-commit 复跑仍待主会话提交后按 README §重建一致性 执行。
