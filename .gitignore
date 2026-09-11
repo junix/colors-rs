@@ -7,3 +7,20 @@
 Cargo.lock
 **/*.rs.bk
 *.pdb
+
+# Generated caches, render slices, and numbered lint images (keep final PNG/PDF).
+/docs/infographics/chromap-explainer/render/panels/p-cli@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-complement@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-contrast@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-distance@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-evidence@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-hero@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-kinds@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-luminance@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-parse@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-spaces@2x.png
+/docs/infographics/chromap-explainer/render/panels/p-tokens@2x.png
+/docs/infographics/chromap-explainer/render/slice-00000.png
+/docs/infographics/chromap-explainer/render/slice-03600.png
+/docs/infographics/chromap-explainer/render/slice-07200.png
+__pycache__/
