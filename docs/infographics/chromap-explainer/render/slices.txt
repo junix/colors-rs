@@ -1,3 +1,0 @@
-render/slice-00000.png
-render/slice-03600.png
-render/slice-07200.png
