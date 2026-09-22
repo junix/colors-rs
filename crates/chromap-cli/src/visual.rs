@@ -330,4 +330,3 @@ fn blend_channel(foreground: f64, background: u8, alpha: f64) -> u8 {
 #[cfg(test)]
 #[path = "visual_tests.rs"]
 mod tests;
-
