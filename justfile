@@ -5,6 +5,7 @@ arch_name := if arch() == "aarch64" { "arm64" } else { "x86" }
 default_install_bin := home_directory() / "sync" / (os_name + "-" + arch_name + "-bin")
 install_bin := env("SYNC_BIN_DIR", default_install_bin)
 target_dir := env("CARGO_TARGET_DIR", justfile_directory() / "target")
+stamp := `git rev-parse --short HEAD` + `(git diff --quiet && git diff --cached --quiet) >/dev/null 2>&1 || printf .dirty`
 
 # Show the available project commands.
 @default:
@@ -36,7 +37,7 @@ doc:
 
 # Build the CLI in release mode.
 build:
-    cargo build --release --locked --package chromap-cli
+    PM_BUILD_SHA=g{{stamp}} cargo build --release --locked --package chromap-cli
 
 # Verify that the npm package contains all Rust sources, examples, and the CLI launcher.
 npm-check:
@@ -44,7 +45,7 @@ npm-check:
 
 # Run the CLI from source, for example: `just run --version`.
 run *args:
-    cargo run --quiet --package chromap-cli --bin chromap -- {{args}}
+    PM_BUILD_SHA=g{{stamp}} cargo run --quiet --package chromap-cli --bin chromap -- {{args}}
 
 # Install to ~/sync/<os>-<arch>-bin. Override with SYNC_BIN_DIR.
 install: build
@@ -54,4 +55,4 @@ install: build
 
 # Run every CI validation gate plus a real CLI smoke test.
 ci: fmt-check clippy test doc npm-check
-    cargo run --quiet --package chromap-cli --bin chromap -- --version
+    PM_BUILD_SHA=g{{stamp}} cargo run --quiet --package chromap-cli --bin chromap -- --version

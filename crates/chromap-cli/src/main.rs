@@ -6,6 +6,7 @@ use std::error::Error;
 use std::io::{Error as IoError, ErrorKind};
 use std::path::PathBuf;
 use std::process::ExitCode;
+use std::sync::OnceLock;
 
 use chromap::{
     analogous_scale, average_color, best_black_or_white, best_foreground, composite_over,
@@ -19,10 +20,20 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use serde_json::{json, Value};
 use visual::{output_png, ColorPolicy, PngReport, TerminalStyle};
 
+/// Version reported by `--version`: the crate semver plus the git build stamp
+/// (`+g<sha>[.dirty]`) when `PM_BUILD_SHA` was set at compile time.
+fn version() -> &'static str {
+    static STAMPED: OnceLock<String> = OnceLock::new();
+    STAMPED.get_or_init(|| match option_env!("PM_BUILD_SHA") {
+        Some(stamp) => format!("{}+{}", env!("CARGO_PKG_VERSION"), stamp),
+        None => env!("CARGO_PKG_VERSION").into(),
+    })
+}
+
 #[derive(Debug, Parser)]
 #[command(
     name = "chromap",
-    version,
+    version = version(),
     about = "Color conversion, perceptual palettes, and WCAG contrast tools",
     propagate_version = true
 )]

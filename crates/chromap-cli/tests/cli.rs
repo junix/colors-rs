@@ -229,3 +229,14 @@ fn png_rejects_more_than_256_colors() {
     assert!(stderr_text(&output).contains("at most 256 colors"));
     assert!(!path.exists());
 }
+
+#[test]
+fn version_flag_prints_stamped_semver() {
+    let output = chromap(&["--version"]);
+    assert!(output.status.success());
+    let text = stdout_text(&output);
+    assert!(text.contains(env!("CARGO_PKG_VERSION")));
+    if let Some(stamp) = option_env!("PM_BUILD_SHA") {
+        assert!(text.contains(&format!("+{}", stamp)), "version: {text}");
+    }
+}
